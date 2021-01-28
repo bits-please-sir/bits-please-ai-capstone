@@ -1,5 +1,5 @@
-import React from "react";
-
+import React, {Component} from "react";
+import ReactDOM from "react-dom";
 // react-bootstrap components
 import {
   Badge,
@@ -16,20 +16,50 @@ import {
 import ChatWindow from "./ChatWindow";
 import ChatComposer from "./ChatComposer";
 
-function Typography() {
-  const messages = [
-    { text: "Hey There!" },
-    { text: "Could you expand on your experience with React at IBM?" }
-  ]
-  return (
-    <>
-      <Container fluid>
-      <h1>Betty The HR Rep</h1>
+export default class App extends Component {
+  constructor(props) {
+  super(props);
+  this.state = {messages:[{text: "Hey There!" },
+  { text: "Could you expand on your experience with React at IBM?"}]};
+  }
+
+  submitted = getNewMessage => {
+    if (getNewMessage != "") {
+      // match the state format
+      const newMessage = { text: getNewMessage };
+      // merge new message in copy of state stored messages
+      let updatedMessages = [...this.state.messages, newMessage];
+      // update state
+      this.setState({
+        messages: updatedMessages
+      });
+    }
+  };
+  render(){
+    return(
+      <div className = "App">
+        <h1>Betty The HR Rep</h1>
         {/* send stored messages as props to chat window */}
-        <ChatWindow messagesList={messages} />
+        <ChatWindow messagesList={this.state.messages} />
         {/* send submitted props to chat composer */}
-        <ChatComposer submitted={messages} />
-        {/* <Row>
+        <ChatComposer submitted={this.submitted} />
+        
+      </div>
+    );
+  }
+}
+const rootElement = document.getElementById("root");
+ReactDOM.render(<App />, rootElement);
+
+  //return (
+   // <>
+     // <Container fluid>
+      //<h1>Betty The HR Rep</h1>
+       // {/* send stored messages as props to chat window */}
+       // <ChatWindow messagesList={messages} />
+       // {/* send submitted props to chat composer */}
+       // <ChatComposer submitted={} />
+        /* <Row>
           <Col md="12">
             <Card>
               <Card.Header>
@@ -151,10 +181,10 @@ function Typography() {
               </Card.Body>
             </Card>
           </Col>
-        </Row> */}
-      </Container>
-    </>
-  );
-}
+      //  </Row> */
+      //</Container>
+    //</>
+  //);
+//}
 
-export default Typography;
+
