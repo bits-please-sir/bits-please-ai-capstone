@@ -18,9 +18,13 @@ import ChatComposer from "./ChatComposer";
 
 export default class App extends Component {
   constructor(props) {
-  super(props);
-  this.state = {messages:[{text: "Hey There!" },
-  { text: "Could you expand on your experience with React at IBM?"}]};
+      super(props);
+      this.state = {
+      messages:[
+      {text: "Betty: Hey There! My name's Betty and I'll be your interviewer today." },
+      { text: "Betty: Could you expand on your experience with React at IBM?"}
+      ]
+  };
   }
 
   submitted = getNewMessage => {
@@ -28,7 +32,7 @@ export default class App extends Component {
       // match the state format
       const newMessage = { text: getNewMessage };
       // merge new message in copy of state stored messages
-      let updatedMessages = [...this.state.messages, newMessage];
+      let updatedMessages = [...this.state.messages, newMessage, {text: "Betty: That's great! *remeber to always mention methods + results*"}, {text: "Betty: I see you have a lot of leardship roles, what is one time you had to resolve a conflict in that type of position?"}];
       // update state
       this.setState({
         messages: updatedMessages
@@ -37,8 +41,8 @@ export default class App extends Component {
   };
   render(){
     return(
-      <div className = "App">
-        <h1>Betty The HR Rep</h1>
+      <div>
+        <h1>Betty The Manager</h1>
         {/* send stored messages as props to chat window */}
         <ChatWindow messagesList={this.state.messages} />
         {/* send submitted props to chat composer */}
@@ -48,8 +52,8 @@ export default class App extends Component {
     );
   }
 }
-const rootElement = document.getElementById("root");
-ReactDOM.render(<App />, rootElement);
+// const rootElement = document.getElementById("root");
+// ReactDOM.render(<App />, rootElement);
 
   //return (
    // <>

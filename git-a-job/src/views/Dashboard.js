@@ -24,7 +24,7 @@ function Dashboard() {
         Hello & Welcome!
       </h1>
       <h4>
-        Git-A-Job is a platform powered by knownledged based systems to help YOU prep for those upcoming technical interviews. The first step is to upload your resume, and from there a job profile, specific behavioral questions, and focused coding challege will be generated based on your experince. Good luck!
+        Git-A-Job is a platform powered by knownledged based systems to help YOU prep for those upcoming technical interviews. The first step is to upload your resume, and from there a job profile, specific behavioral questions, and focused coding challeges will be generated based on your experince. Good luck!
         </h4>
         {/* <Row>
           <Col lg="3" sm="6">
