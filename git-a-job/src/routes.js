@@ -17,9 +17,9 @@
 */
 import Dashboard from "views/Dashboard.js";
 import UserProfile from "views/UserProfile.js";
-import TableList from "views/TableList.js";
-import Typography from "views/Typography.js";
-import Icons from "views/Icons.js";
+import ResumeUpload from "views/ResumeUpload.js";
+import WatsonInterview from "views/WatsonInterview.js";
+import CodingChallenge from "views/CodingChallenge.js";
 import Maps from "views/Maps.js";
 import Notifications from "views/Notifications.js";
 import Upgrade from "views/Upgrade.js";
@@ -44,7 +44,7 @@ const dashboardRoutes = [
     path: "/resume",
     name: "Resume Upload",
     icon: "nc-icon nc-cloud-upload-94",
-    component: TableList, 
+    component: ResumeUpload, 
     layout: "/admin",
   },
   {
@@ -58,14 +58,14 @@ const dashboardRoutes = [
     path: "/behaviorial",
     name: "Behavioral Prep",
     icon: "nc-icon nc-chat-round",
-    component: Typography,
+    component: WatsonInterview,
     layout: "/admin",
   },
   {
     path: "/coding",
     name: "Coding Challege",
     icon: "nc-icon nc-puzzle-10",
-    component: Icons,
+    component: CodingChallenge,
     layout: "/admin",
   },
   // {
