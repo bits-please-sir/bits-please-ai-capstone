@@ -7,6 +7,7 @@ export default class ChatWindow extends Component {
   componentDidUpdate = (prevProps, prevState) => {
     // if component received new props
     if (this.props.messagesList !== prevProps.messagesList) {
+        //add suggestion to list if updated <p> Great! Remeber to always mention methods + results </p>
       // call ref and scroll
       this.messageListEnd.scrollIntoView({ behavior: "smooth" });
     }
@@ -31,6 +32,7 @@ export default class ChatWindow extends Component {
               className="reference"
               ref={node => (this.messageListEnd = node)}
             />
+            
           </div>
         </div>
       </div>

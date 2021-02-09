@@ -4,40 +4,20 @@ import React, { Component } from "react";
 export default class ChatComposer extends Component {
   // temp state to only store new single message
   state = {
-    message: ''
+    new: ""
   };
-  /*submitted = getNewMessage => {
-    if (getNewMessage != "") {
-      // match the state format
-      const newMessage = { text: getNewMessage };
-      // merge new message in copy of state stored messages
-      let updatedMessages = [...this.state.messages, newMessage];
-      // update state
-      this.setState({
-        messages: updatedMessages
-      });
-    }
-  }*/
 
   // if form was submitted, notify parent component
-  submitted = event => {
+  handleSubmit = event => {
     event.preventDefault();
-    this.props.submitted(this.state.new)
     // send event value to parent component via calling props
-    /*if(event != ""){
-      const newMessage = {text: event};
-      let updatedMessages = [...this.state.messages, newMessage];
-      */
-      this.setState({
-        message: ""
-      });
-      //return updatedMessages;
-    };
-    //this.props.submitted(this.state.new);
+    this.props.submitted(this.state.new);
     // remove single message stored in this component state
     // and empty input coz form was submitted
-    
-  
+    this.setState({
+      new: ""
+    });
+  };
 
   // on input check if its not empty and store single message
   // in this component state
@@ -46,7 +26,7 @@ export default class ChatComposer extends Component {
     if (typedValue != "" && typedValue != " ") {
       // store new single message temporarily
       this.setState({
-        message: event.target.value
+        new: event.target.value
       });
     }
   };
@@ -56,7 +36,7 @@ export default class ChatComposer extends Component {
       // dont use event => handle event below
       // binding won't work here
       <div className="chat-composer">
-        <form onSubmit={this.submitted}>
+        <form onSubmit={this.handleSubmit}>
           <input
             className="form-control"
             placeholder="Type & hit enter"
@@ -64,7 +44,6 @@ export default class ChatComposer extends Component {
             value={this.state.new}
           />
         </form>
-        
       </div>
     );
   }
