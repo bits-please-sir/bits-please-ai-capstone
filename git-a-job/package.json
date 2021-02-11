@@ -1,13 +1,16 @@
 {
   "name": "light-bootstrap-dashboard-react",
+  "proxy": "http://localhost:8000",
   "version": "2.0.0",
   "dependencies": {
     "@fortawesome/fontawesome-free": "5.15.2",
+    "axios": "^0.21.1",
     "bootstrap": "4.6.0",
     "chartist": "0.10.1",
     "gulp": "4.0.2",
     "gulp-append-prepend": "1.0.8",
     "jquery": "3.5.1",
+    "mammoth": "^1.4.16",
     "node-sass": "4.14.1",
     "react": "17.0.1",
     "react-bootstrap": "1.4.3",
