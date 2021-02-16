@@ -3,7 +3,6 @@ var app = express();
 var multer = require('multer')
 var cors = require('cors');
 var mammoth = require("mammoth");
-const { textChangeRangeNewSpan } = require('typescript');
 
 app.use(cors())
 
@@ -46,18 +45,6 @@ app.post('/upload',function(req, res) {
       //return res.status(200).send(req.file);
 
     })
-
-});
-
-app.get('/resumetext', function(req, res) {
-
-    var text = '';
-    mammoth.extractRawText({path: "public/resume.docx"}).then(function(result){
-    text.concat(result.value); // The raw text
-    return result.value;
-     });
-
-     return res.send(text);
 
 });
 
