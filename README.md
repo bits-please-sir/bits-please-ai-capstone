@@ -22,7 +22,7 @@ should open up in localhost!
 # to run server
 should be in `git-a-job` directory
 
-nodemon server.js
+`nodemon server.js`
 
 should be listening on port 8000
 
