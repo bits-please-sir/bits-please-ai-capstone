@@ -7,7 +7,9 @@ constructor(props) {
     super(props);
       this.state = {
         selectedFile: null,
-        fileDisplay: ''
+        fileDisplay: '',
+        languages: [],
+        watson: null,
       }
    
   }
@@ -36,7 +38,78 @@ onChangeHandler=event=>{
               // this.afterSetStateFinished();
           });
     })
+    const lang = ['python', 'java', 'ruby', 'javascript', 'golang', 'react', 'sql', 'c', 'c++', 'c#'];
+    const delim = [' ', '.', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
+    var string = this.state.fileDisplay.toLowerCase().replace(/[*_#:@,.()/]/g, ' ');
+    console.log("hi");
+    const c = lang.filter(value => string.includes(value));
+    this.setState({
+      languages: c
+    }, () => {
+              // this.afterSetStateFinished();
+              //.filter(e => lang.indexOf(e) !== -1)
+    });
+    var l;
+    c.forEach(function(item){
+      l += item + ' ';
 
+    })
+    this.setState({
+      watson: 'yes'
+          }, () => {
+              // this.afterSetStateFinished();
+          });
+  // <script>
+    window.watsonAssistantChatOptions = {
+        integrationID: "72f47ba6-cd17-4bab-8a81-9fe1834075f9", // The ID of this integration.
+        region: "us-east", // The region your integration is hosted in.
+        serviceInstanceID: "9fd7c9e6-2576-4831-9a1e-abd52ed19068", // The ID of your service instance.
+        onLoad: function(instance) { 
+            function handler(obj) {
+              console.log(obj.type, obj.data);
+            }
+            //instance.writeableElements.welcomeNodeBeforeElement.innerHTML = '<div class="my-awesome-class">Disclaimer text...</div>';
+
+            let sendObject = {
+              "input": {
+                "message_type": "text",
+                "text": "java"
+              }
+            };
+            const sendOptions = {
+              "silent": true
+              //"silent": false
+            }
+
+            instance.send(sendObject,sendOptions).catch(function(error) {
+              console.error('This message did not send!');
+            });
+
+            sendObject = {
+              "input": {
+                "message_type": "text",
+                "text": l
+              }
+            };
+
+                // setTimeout(function(){
+                //   instance.off({ type: "send", handler: handler});
+                // }, 30000);
+
+                instance.send(sendObject,sendOptions).catch(function(error) {
+                  console.error('This message did not send!');
+                });
+
+                instance.render(); 
+
+              }
+      };
+    setTimeout(function(){
+      const t=document.createElement('script');
+      t.src="https://web-chat.global.assistant.watson.appdomain.cloud/loadWatsonAssistantChat.js";
+      document.head.appendChild(t);
+
+    });
 
     // this.setState({
     //   fileDisplay: text,
