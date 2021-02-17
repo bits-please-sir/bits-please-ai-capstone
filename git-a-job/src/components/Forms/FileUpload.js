@@ -61,9 +61,9 @@ onChangeHandler=event=>{
           });
   // <script>
     window.watsonAssistantChatOptions = {
-        integrationID: "72f47ba6-cd17-4bab-8a81-9fe1834075f9", // The ID of this integration.
+        integrationID: "{integrationID}", // The ID of this integration.
         region: "us-east", // The region your integration is hosted in.
-        serviceInstanceID: "9fd7c9e6-2576-4831-9a1e-abd52ed19068", // The ID of your service instance.
+        serviceInstanceID: "{serviceID}", // The ID of your service instance.
         onLoad: function(instance) { 
             function handler(obj) {
               console.log(obj.type, obj.data);
