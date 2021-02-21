@@ -21,11 +21,14 @@ function Dashboard() {
     <>
       <Container fluid>
       <h1>
-        Hello & Welcome!
+        Hello & Welcome to Git-A-Job!
       </h1>
       <h4>
-        Git-A-Job is a platform powered by knownledged based systems to help YOU prep for those upcoming technical interviews. The first step is to upload your resume, and from there a job profile, specific behavioral questions, and focused coding challeges will be generated based on your experince. Good luck!
-        </h4>
+      Git-A-Job is a platform powered by knowledge-based systems to help YOU prep for those upcoming technical interviews. 
+      The first step is to upload your resume, and from there specific questions about the topics on your resume will be 
+      asked by our hiring manager Betty. Betty will be there to chat through a widget pop-up in the bottom right corner 
+      once you successfully upload your resume. Good luck! 
+      </h4>
         {/* <Row>
           <Col lg="3" sm="6">
             <Card className="card-stats">
