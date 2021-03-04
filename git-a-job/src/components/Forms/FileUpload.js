@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import axios from 'axios';
+import { Widget, addResponseMessage } from 'react-chat-widget';
+import 'react-chat-widget/lib/styles.css';
 
 function filter_langs(lang_list) {
     const lang = ['python', 'java', 'ruby', 'golang', 'react', 'sql', 'c', 'c++', 'c#'];
@@ -25,6 +27,34 @@ function filter_langs(lang_list) {
 
 }
 
+   
+
+    const handleNewUserMessage = (newMessage) => {
+      console.log(`New message incoming! ${newMessage}`);
+      // Now send the message throught the backend API
+      // call Betty
+      var response = 'heelo!!';
+      const body = {
+        "incomingMessage": newMessage
+      };
+      const senderthing = `incomingMessage=${newMessage}`;
+      console.log(body);
+      axios.post("http://localhost:8000/bettyresp", senderthing, {
+       // receive two    parameter endpoint url ,form data
+        }).then(res => { // then print response status
+        // text = res.data;
+         console.log(res);
+         addResponseMessage(res.data);
+
+        // this.setState({
+        //       fileDisplay: text
+        //   }, () => {
+        //       // this.afterSetStateFinished();
+        //   });
+    })
+      addResponseMessage(response);
+    };
+
 export default class FileUpload extends Component {
 
 constructor(props) {
@@ -39,6 +69,10 @@ constructor(props) {
    
   }
 
+  
+  // useEffect(() => {
+  //   addResponseMessage('Welcome to this awesome chat!');
+  // }, [])
 
 onChangeHandler=event=>{
     this.setState({
@@ -51,6 +85,7 @@ onChangeHandler=event=>{
     const data = new FormData()
     data.append('file', this.state.selectedFile)
     var text = 'resume text: '
+    console.log(data)
     axios.post("http://localhost:8000/upload", data, {
        // receive two    parameter endpoint url ,form data
     }).then(res => { // then print response status
@@ -140,9 +175,9 @@ onChangeHandler=event=>{
 
 
         window.watsonAssistantChatOptions = {
-          integrationID: {integrationID}, // The ID of this integration.
-          region: "us-east", // The region your integration is hosted in.
-          serviceInstanceID: {serviceINstanceID}, // The ID of your service instance.
+                    integrationID: "72f47ba6-cd17-4bab-8a81-9fe1834075f9", // The ID of this integration.
+                  region: "us-east", // The region your integration is hosted in.
+                  serviceInstanceID: "9fd7c9e6-2576-4831-9a1e-abd52ed19068", // The ID of your service instance.
         onLoad: function(instance) { 
             function handler(obj) {
               console.log(obj.type, obj.data);
@@ -208,8 +243,10 @@ onChangeHandler=event=>{
         {this.state.isActive ?(
               // <HideButton onClick={this.handleHide}/>
               <div>
-              <h4>Resume Upload Success, click below to chat with a hiring manager</h4>
-              <button type="button" className="btn btn-info" onClick={this.onClickHandlerWidget}>Chat with Betty!</button>
+                <h4>Resume Upload Success, click on widget to chat with a hiring manager</h4>
+                 <Widget title="Hello! I'm Betty" subtitle="I am here to ask you a few questions about your resume" handleNewUserMessage={handleNewUserMessage}/>
+              {/* <h4>Resume Upload Success, click below to chat with a hiring manager</h4>
+              <button type="button" className="btn btn-info" onClick={this.onClickHandlerWidget}>Chat with Betty!</button> */}
               </div>
            ) : (
             //  <ShowButton onClick={this.handleShow}/>

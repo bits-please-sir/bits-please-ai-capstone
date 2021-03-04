@@ -48,6 +48,49 @@ app.post('/upload',function(req, res) {
 
 });
 
+
+const AssistantV2 = require('ibm-watson/assistant/v2');
+const { IamAuthenticator } = require('ibm-watson/auth');
+
+const assistant = new AssistantV2({
+  version: '2020-04-01',
+  authenticator: new IamAuthenticator({
+    apikey: '0mkcToFBYkhrcIKC_YjdrmmUOha5ByD0s3tnUQQ4Ih5P',
+  }),
+  //serviceUrl: 'https://api.us-east.assistant.watson.cloud.ibm.com/instances/9fd7c9e6-2576-4831-9a1e-abd52ed19068',
+  serviceUrl: 'https://api.us-east.assistant.watson.cloud.ibm.com/instances/9fd7c9e6-2576-4831-9a1e-abd52ed19068',
+});
+
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.post('/bettyresp', function (req, res) {
+    //console.log(req);
+    console.log('Got body:', req.body);
+    console.log(req.body.incomingMessage);
+    //console.log(res);
+    assistant.messageStateless({
+        assistantId: '52a4f52e-30c8-45f9-b848-94f94438fd00',
+        // sessionId: '{session_id}',
+        input: {
+          'message_type': 'text',
+          'text': req.body.incomingMessage
+          }
+        })
+        .then(resp => {
+          //console.log(JSON.stringify(res.result, null, 2));
+          console.log(JSON.stringify(resp.result.output.generic[0].text));
+          return res.status(200).send(JSON.stringify(resp.result.output.generic[0].text));
+        })
+        .catch(err => {
+          console.log(err);
+        });
+
+    //res.send('GET request to the homepage')
+
+});
+
 app.listen(8000, function() {
 
     ('App running on port 8000');
