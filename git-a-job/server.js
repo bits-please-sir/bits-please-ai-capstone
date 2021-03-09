@@ -3,7 +3,7 @@ var app = express();
 var multer = require('multer')
 var cors = require('cors');
 var mammoth = require("mammoth");
-
+const fs = require('fs');
 app.use(cors())
 
 var storage = multer.diskStorage({
@@ -51,6 +51,7 @@ app.post('/upload',function(req, res) {
 
 const AssistantV2 = require('ibm-watson/assistant/v2');
 const { IamAuthenticator } = require('ibm-watson/auth');
+let sessID;
 
 const assistant = new AssistantV2({
   version: '2020-04-01',
@@ -60,7 +61,17 @@ const assistant = new AssistantV2({
   //serviceUrl: 'https://api.us-east.assistant.watson.cloud.ibm.com/instances/9fd7c9e6-2576-4831-9a1e-abd52ed19068',
   serviceUrl: 'https://api.us-east.assistant.watson.cloud.ibm.com/instances/9fd7c9e6-2576-4831-9a1e-abd52ed19068',
 });
-
+assistant.createSession({
+    assistantId: '52a4f52e-30c8-45f9-b848-94f94438fd00'
+  })
+    .then(res => {
+        //console.log(res.result);
+        sessID = res.result.session_id;
+      console.log(JSON.stringify(res.result, null, 2));
+    })
+    .catch(err => {
+      console.log(err);
+    });
 const bodyParser = require('body-parser');
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -69,10 +80,14 @@ app.post('/bettyresp', function (req, res) {
     //console.log(req);
     console.log('Got body:', req.body);
     console.log(req.body.incomingMessage);
+    fs.appendFile('responses.txt', req.body.incomingMessage + '\n', (err) => {
+        if(err) throw err;
+        console.log('Data appended to file');
+      });
     //console.log(res);
-    assistant.messageStateless({
+    assistant.message({
         assistantId: '52a4f52e-30c8-45f9-b848-94f94438fd00',
-        // sessionId: '{session_id}',
+        sessionId: sessID,
         input: {
           'message_type': 'text',
           'text': req.body.incomingMessage

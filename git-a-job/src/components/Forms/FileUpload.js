@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Widget, addResponseMessage } from 'react-chat-widget';
 import 'react-chat-widget/lib/styles.css';
 
+
 function filter_langs(lang_list) {
     const lang = ['python', 'java', 'ruby', 'golang', 'react', 'sql', 'c', 'c++', 'c#'];
     const delim = [' ', '.', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
@@ -27,6 +28,10 @@ function filter_langs(lang_list) {
 
 }
 
+// writeFile('responses.txt', " ", (err) => {
+//   if(err) throw err;
+//   console.log('File has been saved');
+// });
    
 
     const handleNewUserMessage = (newMessage) => {
@@ -45,14 +50,14 @@ function filter_langs(lang_list) {
         // text = res.data;
          console.log(res);
          addResponseMessage(res.data);
-
+         
         // this.setState({
         //       fileDisplay: text
         //   }, () => {
         //       // this.afterSetStateFinished();
         //   });
     })
-      addResponseMessage(response);
+      //addResponseMessage(response);
     };
 
 export default class FileUpload extends Component {
