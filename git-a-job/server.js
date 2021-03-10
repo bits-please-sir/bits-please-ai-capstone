@@ -39,9 +39,9 @@ const { IamAuthenticator } = require('ibm-watson/auth');
 const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
   version: '2020-08-01',
   authenticator: new IamAuthenticator({
-    apikey: 'N6MuHksTO9E-5t08f1_MuHqskbA8ut7bSpLJWKWuyDIs',
+    apikey: '{nluapikey}',
   }),
-  serviceUrl: 'https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/b69d1523-94eb-4505-9d10-5009239396e3',
+  serviceUrl: '{nluserviceurl}',
 });
 
 
@@ -149,16 +149,13 @@ let sessID;
 const assistant = new AssistantV2({
   version: '2020-04-01',
   authenticator: new IamAuthenticator({
-    //apikey: '0mkcToFBYkhrcIKC_YjdrmmUOha5ByD0s3tnUQQ4Ih5P',
-    apikey: 'w8kQc66xa1YxWkQ1XelSJu1sNRDSRLmLlqpjJ4g2llja',
+    apikey: '{assistantapi key}',
   }),
-  //serviceUrl: 'https://api.us-east.assistant.watson.cloud.ibm.com/instances/9fd7c9e6-2576-4831-9a1e-abd52ed19068',
-  //serviceUrl: 'https://api.us-east.assistant.watson.cloud.ibm.com/instances/9fd7c9e6-2576-4831-9a1e-abd52ed19068',
-  serviceUrl: 'https://api.us-south.assistant.watson.cloud.ibm.com/instances/d1c7f86d-8c61-4c5e-89db-6db5650588be',
+  serviceUrl: '{assistant service url}',
 });
 assistant.createSession({
     //assistantId: '52a4f52e-30c8-45f9-b848-94f94438fd00'
-    assistantId: '148db6ee-3ca7-4204-be73-0dc15cb74632'
+    assistantId: '{assistantid}'
   })
     .then(res => {
         //console.log(res.result);
@@ -183,7 +180,7 @@ app.post('/bettyresp', function (req, res) {
     //console.log(res);
     assistant.message({
         //assistantId: '52a4f52e-30c8-45f9-b848-94f94438fd00',
-        assistantId: '148db6ee-3ca7-4204-be73-0dc15cb74632',
+        assistantId: '{assistantid}',
         sessionId: sessID,
         input: {
           'message_type': 'text',
