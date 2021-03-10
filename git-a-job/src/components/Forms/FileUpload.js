@@ -4,61 +4,12 @@ import { Widget, addResponseMessage } from 'react-chat-widget';
 import 'react-chat-widget/lib/styles.css';
 
 
-function filter_langs(lang_list) {
-    const lang = ['python', 'java', 'ruby', 'golang', 'react', 'sql', 'c', 'c++', 'c#'];
-    const delim = [' ', '.', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
-    var filter_delim_str = lang_list.toLowerCase().replace(/[*_#:@,.()/]/g, ' ');
-    console.log(filter_delim_str);
-    const final_filter = lang.filter(value => filter_delim_str.includes(value));
-    console.log(final_filter);
-    // this.setState({
-    //   languages: final_filter
-    // }, () => {
-    //           // this.afterSetStateFinished();
-    //           //.filter(e => lang.indexOf(e) !== -1)
-    // });
-    var scrapped_langs;
-    final_filter.forEach(function(item){
-      scrapped_langs += item + ' ';
 
-    })
-    console.log("HIIIIIIIIIIIIII")
-    console.log(scrapped_langs);
-    return scrapped_langs;
-
-}
 
 // writeFile('responses.txt', " ", (err) => {
 //   if(err) throw err;
 //   console.log('File has been saved');
 // });
-   
-
-    const handleNewUserMessage = (newMessage) => {
-      console.log(`New message incoming! ${newMessage}`);
-      // Now send the message throught the backend API
-      // call Betty
-      var response = 'heelo!!';
-      const body = {
-        "incomingMessage": newMessage
-      };
-      const senderthing = `incomingMessage=${newMessage}`;
-      console.log(body);
-      axios.post("http://localhost:8000/bettyresp", senderthing, {
-       // receive two    parameter endpoint url ,form data
-        }).then(res => { // then print response status
-        // text = res.data;
-         console.log(res);
-         addResponseMessage(res.data);
-         
-        // this.setState({
-        //       fileDisplay: text
-        //   }, () => {
-        //       // this.afterSetStateFinished();
-        //   });
-    })
-      //addResponseMessage(response);
-    };
 
 export default class FileUpload extends Component {
 
@@ -66,7 +17,7 @@ constructor(props) {
     super(props);
       this.state = {
         selectedFile: null,
-        fileDisplay: '',
+        resumeEntitiesList: [],
         languages: [],
         watson: null,
         isActive: false,
@@ -74,18 +25,15 @@ constructor(props) {
    
   }
 
-  
-  // useEffect(() => {
-  //   addResponseMessage('Welcome to this awesome chat!');
-  // }, [])
 
+// for file select
 onChangeHandler=event=>{
     this.setState({
       selectedFile: event.target.files[0],
       loaded: 0,
     })
   }
-
+  // for uploading file
   onClickHandler = () => {
     const data = new FormData()
     data.append('file', this.state.selectedFile)
@@ -98,138 +46,64 @@ onChangeHandler=event=>{
         //console.log(text);
 
         this.setState({
-              fileDisplay: text
+          resumeEntitiesList: text
           }, () => {
               // this.afterSetStateFinished();
           });
     })
-
-    // console.log(this.state.fileDisplay);
-    // var send_langs = filter_langs(this.state.fileDisplay);
-    // console.log(send_langs);
-
-    
+    // make the interview chat show up
     this.setState({
       isActive: true
           }, () => {
               // this.afterSetStateFinished();
           });
-  // <script>
-    // window.watsonAssistantChatOptions = {
-    //       integrationID: "72f47ba6-cd17-4bab-8a81-9fe1834075f9", // The ID of this integration.
-    //       region: "us-east", // The region your integration is hosted in.
-    //       serviceInstanceID: "9fd7c9e6-2576-4831-9a1e-abd52ed19068", // The ID of your service instance.
-    //     onLoad: function(instance) { 
-    //         function handler(obj) {
-    //           console.log(obj.type, obj.data);
-    //         }
-    //         //instance.writeableElements.welcomeNodeBeforeElement.innerHTML = '<div class="my-awesome-class">Disclaimer text...</div>';
-
-    //         // let sendObject = {
-    //         //   "input": {
-    //         //     "message_type": "text",
-    //         //     "text": "java"
-    //         //   }
-    //         // };
-    //         const sendOptions = {
-    //           "silent": true
-    //           //"silent": false
-    //         }
-
-    //         // instance.send(sendObject,sendOptions).catch(function(error) {
-    //         //   console.error('This message did not send!');
-    //         // });
-
-    //         let sendObject = {
-    //           "input": {
-    //             "message_type": "text",
-    //             "text": scrapped_langs
-    //           }
-    //         };
-
-    //             // setTimeout(function(){
-    //             //   instance.off({ type: "send", handler: handler});
-    //             // }, 30000);
-
-    //             instance.send(sendObject,sendOptions).catch(function(error) {
-    //               console.error('This message did not send!');
-    //             });
-
-    //             instance.render(); 
-
-    //           }
-    //   };
-    // setTimeout(function(){
-    //   const t=document.createElement('script');
-    //   t.src="https://web-chat.global.assistant.watson.appdomain.cloud/loadWatsonAssistantChat.js";
-    //   document.head.appendChild(t);
-
-    // });
-
-    // this.setState({
-    //   fileDisplay: text,
-    // })
-
+      // send a hello to trigger the welcome node
+      this.onSendQueMessage("hello");
+ 
     }
 
-    onClickHandlerWidget = () => {
-
-    console.log(this.state.fileDisplay);
-    var send_langs = filter_langs(this.state.fileDisplay);
-    console.log(send_langs);
-
-
-        window.watsonAssistantChatOptions = {
-                    integrationID: "72f47ba6-cd17-4bab-8a81-9fe1834075f9", // The ID of this integration.
-                  region: "us-east", // The region your integration is hosted in.
-                  serviceInstanceID: "9fd7c9e6-2576-4831-9a1e-abd52ed19068", // The ID of your service instance.
-        onLoad: function(instance) { 
-            function handler(obj) {
-              console.log(obj.type, obj.data);
-            }
-            //instance.writeableElements.welcomeNodeBeforeElement.innerHTML = '<div class="my-awesome-class">Disclaimer text...</div>';
-
-            let sendObject = {
-              "input": {
-                "message_type": "text",
-                "text": "java test"
-              }
+    onSendQueMessage = (quededQuestion) => {
+      if (quededQuestion === 'end'){
+        console.log("in end");
+        addResponseMessage('Alright, I think those are all the questions I have - thanks for you time!');
+        // this.setState({
+        //   isActive: true
+        //       }, () => {
+        //           // this.afterSetStateFinished();
+        //       }); --> maybe a solution? or record the results of evaluations
+      }else{
+        console.log("in else");
+            const body = {
+              "incomingMessage": quededQuestion
             };
-            const sendOptions = {
-              "silent": true
-              //"silent": false
-            }
+            const senderthing = `incomingMessage=${quededQuestion}`;
+            console.log(body);
+            axios.post("http://localhost:8000/bettyresp", senderthing, {
+            // receive two    parameter endpoint url ,form data
+              }).then(res => { // then print response status
+              // text = res.data;
+              console.log(res);
+              addResponseMessage(res.data);
+              
+              // this.setState({
+              //       fileDisplay: text
+              //   }, () => {
+              //       // this.afterSetStateFinished();
+              //   });
+          })
+      }
 
-            instance.send(sendObject,sendOptions).catch(function(error) {
-              console.error('This message did not send!');
-            });
-
-            sendObject = {
-              "input": {
-                "message_type": "text",
-                "text": send_langs
-              }
-            };
-
-                // setTimeout(function(){
-                //   instance.off({ type: "send", handler: handler});
-                // }, 30000);
-
-                instance.send(sendObject,sendOptions).catch(function(error) {
-                  console.error('This message did not send!');
-                });
-
-                instance.render(); 
-
-              }
-      };
-    setTimeout(function(){
-      const t=document.createElement('script');
-      t.src="https://web-chat.global.assistant.watson.appdomain.cloud/loadWatsonAssistantChat.js";
-      document.head.appendChild(t);
-
-    });
-
+    }
+    // message will be the message that the user ACTUALLY sends, but arent using that right now
+    // required by the Widget component, but want to send out own queued messages
+    handleNewUserMessage = (message) => {
+      //handleNewUserMessage(message);
+      if(this.state.resumeEntitiesList.length > 0){
+        // will send first entity from resume entities found
+        var check = this.state.resumeEntitiesList.shift();
+        this.onSendQueMessage(check);
+      }
+      
 
     }
 
@@ -238,18 +112,19 @@ onChangeHandler=event=>{
   render(){
       return(
         <div>
-        <input type="file" name="file" className="btn btn-secondary" onChange={this.onChangeHandler}/>
+        <input type="file" accept=".docx" name="file" className="btn btn-secondary" onChange={this.onChangeHandler}/>
         <h4>Once your desired Resume is choosen, please click upload</h4>
         <div>
         <button type="button" className="btn btn-success" onClick={this.onClickHandler}>Upload</button> 
         </div>
         <div>
-        {/* <p>{this.state.fileDisplay}</p> */}
+        {/* <p>{this.state.resumeEntitiesList}</p> */}
         {this.state.isActive ?(
               // <HideButton onClick={this.handleHide}/>
               <div>
                 <h4>Resume Upload Success, click on widget to chat with a hiring manager</h4>
-                 <Widget title="Hello! I'm Betty" subtitle="I am here to ask you a few questions about your resume" handleNewUserMessage={handleNewUserMessage}/>
+                {/* //handleNewUserMessage={handleNewUserMessage(this.state.resumeEntitiesList.shift())} */}
+                 <Widget title="Welcome to Git-A-Job's Interview Chat" subtitle="Type below to answer interview questions" handleNewUserMessage={this.handleNewUserMessage}/>
               {/* <h4>Resume Upload Success, click below to chat with a hiring manager</h4>
               <button type="button" className="btn btn-info" onClick={this.onClickHandlerWidget}>Chat with Betty!</button> */}
               </div>
