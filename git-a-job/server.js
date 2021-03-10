@@ -154,7 +154,6 @@ const assistant = new AssistantV2({
   serviceUrl: '{assistant service url}',
 });
 assistant.createSession({
-    //assistantId: '52a4f52e-30c8-45f9-b848-94f94438fd00'
     assistantId: '{assistantid}'
   })
     .then(res => {
@@ -179,7 +178,6 @@ app.post('/bettyresp', function (req, res) {
       });
     //console.log(res);
     assistant.message({
-        //assistantId: '52a4f52e-30c8-45f9-b848-94f94438fd00',
         assistantId: '{assistantid}',
         sessionId: sessID,
         input: {
