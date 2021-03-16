@@ -8,6 +8,7 @@
     "axios": "^0.21.1",
     "bootstrap": "4.6.0",
     "chartist": "0.10.1",
+    "dotenv": "^8.2.0",
     "gulp": "4.0.2",
     "gulp-append-prepend": "1.0.8",
     "ibm-watson": "^6.0.3",

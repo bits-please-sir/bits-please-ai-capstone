@@ -6,6 +6,59 @@ var mammoth = require("mammoth");
 const fs = require('fs');
 app.use(cors())
 
+//console.log(`Your port is ${process.env.PORT}`); // undefined
+const dotenv = require('dotenv');
+dotenv.config();
+// console.log(`Your port is ${process.env.PORT}`); // 8626
+// console.log(`url ${process.env.NLU_API_URL}`); // 8626
+
+
+
+// amy b's nlu code 
+const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
+const { IamAuthenticator } = require('ibm-watson/auth');
+
+const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
+  version: '2020-08-01',
+  authenticator: new IamAuthenticator({
+    apikey: `${process.env.NLU_API_KEY}`,
+  }),
+  serviceUrl: `${process.env.NLU_API_URL}`,
+});
+
+const AssistantV2 = require('ibm-watson/assistant/v2');
+//const { IamAuthenticator } = require('ibm-watson/auth');
+//let sessID;
+
+const assistant = new AssistantV2({
+  version: '2020-04-01',
+  authenticator: new IamAuthenticator({
+    apikey: `${process.env.ASSISTANT_API_KEY}`,
+  }),
+  serviceUrl: `${process.env.ASSISTANT_API_URL}`,
+});
+
+let sessID = create_session_id();
+
+async function create_session_id(){
+    assistant.createSession({
+        assistantId: `${process.env.ASSISTANT_ID}`
+      })
+        .then(res => {
+            //console.log(res.result);
+            sessID = res.result.session_id;
+            console.log(JSON.stringify(res.result, null, 2));
+            return sessID;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+
+};
+
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // non intelligently filtering for languages rn
 function filter_langs(lang_list) {
@@ -32,20 +85,19 @@ var storage = multer.diskStorage({
 })
 
 
-// amy b's nlu code 
-const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
-const { IamAuthenticator } = require('ibm-watson/auth');
-
-const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
-  version: '2020-08-01',
-  authenticator: new IamAuthenticator({
-    apikey: '{nluapikey}',
-  }),
-  serviceUrl: '{nluserviceurl}',
-});
-
-
 var upload = multer({ storage: storage }).single('file')
+
+app.get('/delete', function(req, res) {
+    try {
+        fs.unlinkSync('public/resume.docx');
+        sessID = create_session_id();
+        return res.status(200).send('File deleted');
+        //file removed
+      } catch(err) {
+        console.error(err)
+      }
+    }
+);
 
 app.post('/upload',function(req, res) {
      
@@ -59,14 +111,18 @@ app.post('/upload',function(req, res) {
            var text = '';
            mammoth.extractRawText({path: "public/resume.docx"}).then(function (resultObject) {
             //console.log(resultObject.value);
-            var resume_text = resultObject.value;
+            let resume_text = resultObject.value;
             //res.send(resultObject.value);
             text.concat(resultObject.value);
             const delim = [' ','  ', '.', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
-            var filtered_resume_text = resume_text.toLowerCase().replace(/[*_#:@,.()/]/g, ' ');
+            let filtered_resume_text = resume_text.toLowerCase().replace(/[*_#:@,.()/]/g, ' ');
 
             // llist of languages recignized
-            var langs_to_ask = filter_langs(filtered_resume_text);
+            let langs_to_ask = filter_langs(filtered_resume_text);
+            console.log(langs_to_ask);
+            langs_to_ask = langs_to_ask.sort(() => Math.random() - 0.5)
+            console.log(langs_to_ask);
+            langs_to_ask = [langs_to_ask[0],langs_to_ask[1],langs_to_ask[2],langs_to_ask[3]]
             // i dont think we need this
             //langs_to_ask.unshift('hello!');
             console.log(langs_to_ask);
@@ -120,10 +176,6 @@ app.post('/upload',function(req, res) {
                   }
                   
 
-
-
-
-
                 })
                 .catch(err => {
                   console.log('error:', err);
@@ -142,43 +194,19 @@ app.post('/upload',function(req, res) {
 });
 
 
-const AssistantV2 = require('ibm-watson/assistant/v2');
-//const { IamAuthenticator } = require('ibm-watson/auth');
-let sessID;
-
-const assistant = new AssistantV2({
-  version: '2020-04-01',
-  authenticator: new IamAuthenticator({
-    apikey: '{assistantapi key}',
-  }),
-  serviceUrl: '{assistant service url}',
-});
-assistant.createSession({
-    assistantId: '{assistantid}'
-  })
-    .then(res => {
-        //console.log(res.result);
-        sessID = res.result.session_id;
-      console.log(JSON.stringify(res.result, null, 2));
-    })
-    .catch(err => {
-      console.log(err);
-    });
-const bodyParser = require('body-parser');
-
-app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/bettyresp', function (req, res) {
     //console.log(req);
     console.log('Got body:', req.body);
     console.log(req.body.incomingMessage);
-    fs.appendFile('responses.txt', req.body.incomingMessage + '\n', (err) => {
-        if(err) throw err;
-        console.log('Data appended to file');
-      });
+    // fs.appendFile('responses.txt', req.body.incomingMessage + '\n', (err) => {
+    //     if(err) throw err;
+    //     console.log('Data appended to file');
+    //   });
     //console.log(res);
+    
     assistant.message({
-        assistantId: '{assistantid}',
+        assistantId: `${process.env.ASSISTANT_ID}`,
         sessionId: sessID,
         input: {
           'message_type': 'text',
@@ -187,7 +215,7 @@ app.post('/bettyresp', function (req, res) {
         })
         .then(resp => {
           //console.log(JSON.stringify(res.result, null, 2));
-          console.log(JSON.stringify(resp.result))
+          console.log(JSON.stringify(resp.result));
           console.log(JSON.stringify(resp.result.output.generic[0].text));
           return res.status(200).send(JSON.stringify(resp.result.output.generic[0].text));
         })
@@ -199,8 +227,8 @@ app.post('/bettyresp', function (req, res) {
 
 });
 
-app.listen(8000, function() {
+app.listen(process.env.PORT, function() {
 
-    ('App running on port 8000');
+    ('App running ');
 
 });

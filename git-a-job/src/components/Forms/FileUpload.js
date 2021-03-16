@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import axios from 'axios';
-import { Widget, addResponseMessage } from 'react-chat-widget';
+import { Widget, addResponseMessage, deleteMessages } from 'react-chat-widget';
 import 'react-chat-widget/lib/styles.css';
 
 
@@ -21,6 +21,8 @@ constructor(props) {
         languages: [],
         watson: null,
         isActive: false,
+        openDelete: false,
+        totalMessages: 0,
       }
    
   }
@@ -58,32 +60,111 @@ onChangeHandler=event=>{
               // this.afterSetStateFinished();
           });
       // send a hello to trigger the welcome node
-      this.onSendQueMessage("hello");
+      this.onSendQueMessage('HELLOO','');
  
     }
 
-    onSendQueMessage = (quededQuestion) => {
+    getRespForPrev(message) {
+      
+    }
+
+    onClickDelete = () => {
+      axios.get("http://localhost:8000/delete").then(res => { // then print response status
+      //text = res.data;
+      //console.log(text)
+      });
+        // for the original hello
+        deleteMessages(this.state.totalMessages);
+
+        this.setState({
+          openDelete: false,
+          totalMessages: 0,
+          }, () => {
+              // this.afterSetStateFinished();
+          });
+    };
+
+    onSendQueMessage = (quededQuestion, resp) => {
+      console.log(quededQuestion);
+      console.log(resp);
       if (quededQuestion === 'end'){
         console.log("in end");
-        addResponseMessage('Alright, I think those are all the questions I have - thanks for you time!');
+        addResponseMessage('Sweet! Alright, I think those are all the questions I have - thanks for you time!');
+        addResponseMessage('**end of interview, delete & upload to start another**');
+
+        this.setState({
+          openDelete: true,
+          totalMessages: this.state.totalMessages + 1
+          }, () => {
+              // this.afterSetStateFinished();
+          });
+        // delete resume stored
+      
         // this.setState({
         //   isActive: true
         //       }, () => {
         //           // this.afterSetStateFinished();
         //       }); --> maybe a solution? or record the results of evaluations
+      } else if (quededQuestion === 'HELLOO' && resp === ''){
+        //deleteMessages(1);
+        const nextQuestion = `incomingMessage=${quededQuestion}`;
+            
+        axios.post("http://localhost:8000/bettyresp", nextQuestion, {
+        // receive two    parameter endpoint url ,form data
+          }).then(res => { // then print response status
+          // text = res.data;
+          console.log(res);
+          addResponseMessage(res.data);
+          this.setState({
+            totalMessages: this.state.totalMessages + 1
+            }, () => {
+                // this.afterSetStateFinished();
+            });
+          
+          // this.setState({
+          //       fileDisplay: text
+          //   }, () => {
+          //       // this.afterSetStateFinished();
+          //   });
+      })
       }else{
         console.log("in else");
-            const body = {
-              "incomingMessage": quededQuestion
-            };
-            const senderthing = `incomingMessage=${quededQuestion}`;
-            console.log(body);
-            axios.post("http://localhost:8000/bettyresp", senderthing, {
+            //do the evaluation of previous response here
+            const prevResp = `incomingMessage=${resp}`;
+            
+            axios.post("http://localhost:8000/bettyresp", prevResp, {
             // receive two    parameter endpoint url ,form data
               }).then(res => { // then print response status
               // text = res.data;
               console.log(res);
               addResponseMessage(res.data);
+
+              this.setState({
+                totalMessages: this.state.totalMessages + 1
+                }, () => {
+                    // this.afterSetStateFinished();
+                });
+
+              const nextQuestion = `incomingMessage=${quededQuestion}`;
+            
+              axios.post("http://localhost:8000/bettyresp", nextQuestion, {
+              // receive two    parameter endpoint url ,form data
+                }).then(res => { // then print response status
+                // text = res.data;
+                console.log(res);
+                addResponseMessage(res.data);
+                this.setState({
+                  totalMessages: this.state.totalMessages + 1
+                  }, () => {
+                      // this.afterSetStateFinished();
+                  });
+                
+                // this.setState({
+                //       fileDisplay: text
+                //   }, () => {
+                //       // this.afterSetStateFinished();
+                //   });
+            })
               
               // this.setState({
               //       fileDisplay: text
@@ -91,6 +172,8 @@ onChangeHandler=event=>{
               //       // this.afterSetStateFinished();
               //   });
           })
+          //do next quesstion here
+         
       }
 
     }
@@ -101,7 +184,7 @@ onChangeHandler=event=>{
       if(this.state.resumeEntitiesList.length > 0){
         // will send first entity from resume entities found
         var check = this.state.resumeEntitiesList.shift();
-        this.onSendQueMessage(check);
+        this.onSendQueMessage(check, message);
       }
       
 
@@ -112,6 +195,16 @@ onChangeHandler=event=>{
   render(){
       return(
         <div>
+        <h1>
+        Hello & Welcome to Git-A-Job!
+        </h1>
+        <h4>
+          Git-A-Job is a platform powered by knowledge-based systems to help YOU prep for those upcoming technical interviews. This application is geared towards undergraduate students in computer science or technology related fields.
+          The first step is to upload your resume, and from there specific questions about the topics on your resume will be 
+          asked by our hiring manager Betty. Betty will be there to chat through a widget pop-up in the bottom right corner 
+          once you successfully upload your resume. Throughout the interview Betty will also give you feedback and suggests about your responses. Good luck! 
+        </h4>
+        <h4> Please upload a .docx file (word document)</h4>
         <input type="file" accept=".docx" name="file" className="btn btn-secondary" onChange={this.onChangeHandler}/>
         <h4>Once your desired Resume is choosen, please click upload</h4>
         <div>
@@ -127,6 +220,17 @@ onChangeHandler=event=>{
                  <Widget title="Welcome to Git-A-Job's Interview Chat" subtitle="Type below to answer interview questions" handleNewUserMessage={this.handleNewUserMessage}/>
               {/* <h4>Resume Upload Success, click below to chat with a hiring manager</h4>
               <button type="button" className="btn btn-info" onClick={this.onClickHandlerWidget}>Chat with Betty!</button> */}
+              </div>
+           ) : (
+            //  <ShowButton onClick={this.handleShow}/>
+            <p/>
+           )}
+
+        {this.state.openDelete ?(
+              // <HideButton onClick={this.handleHide}/>
+              <div>
+                <h4>Delete Resume, and click upload again to start another interview</h4>
+                <button type="button" className="btn btn-warning" onClick={this.onClickDelete}>Delete Resume</button> 
               </div>
            ) : (
             //  <ShowButton onClick={this.handleShow}/>
