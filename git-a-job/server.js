@@ -6,11 +6,10 @@ var mammoth = require("mammoth");
 const fs = require('fs');
 app.use(cors())
 
-//console.log(`Your port is ${process.env.PORT}`); // undefined
+// configuring env files to pull in
 const dotenv = require('dotenv');
 dotenv.config();
-// console.log(`Your port is ${process.env.PORT}`); // 8626
-// console.log(`url ${process.env.NLU_API_URL}`); // 8626
+
 
 
 
@@ -26,9 +25,8 @@ const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
   serviceUrl: `${process.env.NLU_API_URL}`,
 });
 
+// amy h + milly assistant code
 const AssistantV2 = require('ibm-watson/assistant/v2');
-//const { IamAuthenticator } = require('ibm-watson/auth');
-//let sessID;
 
 const assistant = new AssistantV2({
   version: '2020-04-01',
@@ -39,7 +37,7 @@ const assistant = new AssistantV2({
 });
 
 let sessID = create_session_id();
-
+// a new session should be created for every new interview
 async function create_session_id(){
     assistant.createSession({
         assistantId: `${process.env.ASSISTANT_ID}`
@@ -56,40 +54,43 @@ async function create_session_id(){
 
 };
 
+// used to read the data passed from the front end to the backend
 const bodyParser = require('body-parser');
-
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// non intelligently filtering for languages rn
+// non intelligently filtering for languages rn, hard coding to pull out these ones
 function filter_langs(lang_list) {
     const lang = ['python', 'java', 'ruby', 'golang', 'react', 'sql', 'c','javascript','kotlin'];
-    //console.log(filter_delim_str);
+    // filter the resume text to just the languages that match those above
     var final_filter = lang.filter(value => lang_list.includes(value));
 
     return final_filter;
 
 }
 
+// this storage is used to store the resum upload in the /public folder
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
+      // folder to store resume in
     cb(null, 'public')
-    //cb(null, 'src/components/Forms')
   },
   filename: function (req, file, cb) {
-      //console.log(file.originalname)
+      // this will grab the file extension, which should always be .docx
       let extention = (file.originalname).split('.')[1]
-      //console.log(extention) 
       // every resume will just be uploaded as 'resume.docx to make it easier for initial parsing
       cb(null, 'resume.' +  extention)
   }
 })
 
-
+// multer module used to store the resum
 var upload = multer({ storage: storage }).single('file')
 
+// ENDPOINT /delete will delete the resume from the local code base
 app.get('/delete', function(req, res) {
     try {
+        // unlink will remove the file
         fs.unlinkSync('public/resume.docx');
+        // create new session ID for potential new interview
         sessID = create_session_id();
         return res.status(200).send('File deleted');
         //file removed
@@ -99,32 +100,31 @@ app.get('/delete', function(req, res) {
     }
 );
 
+// ENDPOINT /upload will upload the resume to the local code base 
 app.post('/upload',function(req, res) {
      
     upload(req, res, function (err) {
-        
+        // multer is the module used for the upload
            if (err instanceof multer.MulterError) {
                return res.status(500).json(err)
            } else if (err) {
                return res.status(500).json(err)
            }
-           var text = '';
+           // since it is uploaded to the same place everytime, just grab it from public/resume.docx
            mammoth.extractRawText({path: "public/resume.docx"}).then(function (resultObject) {
             //console.log(resultObject.value);
             let resume_text = resultObject.value;
-            //res.send(resultObject.value);
-            text.concat(resultObject.value);
             const delim = [' ','  ', '.', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
+            // filter out random delims in resume text
             let filtered_resume_text = resume_text.toLowerCase().replace(/[*_#:@,.()/]/g, ' ');
 
             // llist of languages recignized
             let langs_to_ask = filter_langs(filtered_resume_text);
             console.log(langs_to_ask);
+            // this will randomize the languages to ask about each interview
             langs_to_ask = langs_to_ask.sort(() => Math.random() - 0.5)
             console.log(langs_to_ask);
             langs_to_ask = [langs_to_ask[0],langs_to_ask[1],langs_to_ask[2],langs_to_ask[3]]
-            // i dont think we need this
-            //langs_to_ask.unshift('hello!');
             console.log(langs_to_ask);
             // calling NLU to get entities
             const analyzeParams = {
@@ -142,61 +142,53 @@ app.post('/upload',function(req, res) {
                   //console.log(JSON.stringify(analysisResults, null, 2));
                   // list of entities recignized
                   var entity_list = JSON.stringify(analysisResults.result.entities, null, 2);
-                  //console.log(analysisResults.result.entities[0]);
+
+                  // make sure the results of entities recignized are not nothing
                   if (analysisResults.result.entities != null) {
+                    // get just the organization entities
                     var orgs_list = analysisResults.result.entities.filter(function (entry) {
                         return entry.type === 'Organization';
                     });
-                    //console.log(orgs_list);
+                    // get just the company entities
                     var company_list = analysisResults.result.entities.filter(function (entry) {
                         return entry.type === 'Company';
                     });
-                    //console.log(company_list);
-                      //console.log();
-                      //var max_org = orgs_list.filter( x => x["relevance"] == Math.max(...orgs_list.map(x => x["relevance"])) )
-                      // will get orgs that only contain clubs
+                   
+                      // will get organizations that only contain clubs
                       var max_org = orgs_list.filter(function (entry) {
                         return entry.text.indexOf('club') !== -1;
                     });
                       console.log(max_org);
-    
+                      // this will choose the most relevant company on the resume
                       var max_company = company_list.filter( x => x["relevance"] == Math.max(...company_list.map(x => x["relevance"])) )
                       console.log(max_company);
     
-                      //console.log(JSON.stringify(max_org[0].text,null,2));
+                      // adding the orgs and company to the entities to ask the user about
                       langs_to_ask.push('' + max_org[0].text);
                       langs_to_ask.push('' + max_company[0].text);
                       langs_to_ask.push('end');
                       console.log(langs_to_ask);
-    
+                      // send the entities to ask about back to the front end
                       return res.status(200).send(langs_to_ask);
 
                   } else{
                     return res.status(400).send('No data to retrieve');
                   }
-                  
 
                 })
                 .catch(err => {
                   console.log('error:', err);
                 });
-                // filter langs ->
-                //Company, Organization, 
-              
-            
 
           })
-
-      //return res.status(200).send(req.file);
-
     })
 
 });
 
 
-
+// ENDPPOINT /bettyresp will send entities or responses from user to the assistant 
 app.post('/bettyresp', function (req, res) {
-    //console.log(req);
+    // logs the data sent from the front end
     console.log('Got body:', req.body);
     console.log(req.body.incomingMessage);
     // fs.appendFile('responses.txt', req.body.incomingMessage + '\n', (err) => {
@@ -204,7 +196,9 @@ app.post('/bettyresp', function (req, res) {
     //     console.log('Data appended to file');
     //   });
     //console.log(res);
-    
+
+
+    // sends message to betty
     assistant.message({
         assistantId: `${process.env.ASSISTANT_ID}`,
         sessionId: sessID,
@@ -217,16 +211,15 @@ app.post('/bettyresp', function (req, res) {
           //console.log(JSON.stringify(res.result, null, 2));
           console.log(JSON.stringify(resp.result));
           console.log(JSON.stringify(resp.result.output.generic[0].text));
+          // sends response from betty back to the frontend
           return res.status(200).send(JSON.stringify(resp.result.output.generic[0].text));
         })
         .catch(err => {
           console.log(err);
         });
-
-    //res.send('GET request to the homepage')
-
 });
 
+// starts app listening on the port of the frontend
 app.listen(process.env.PORT, function() {
 
     ('App running ');

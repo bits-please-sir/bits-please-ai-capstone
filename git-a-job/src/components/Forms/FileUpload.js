@@ -4,15 +4,9 @@ import { Widget, addResponseMessage, deleteMessages } from 'react-chat-widget';
 import 'react-chat-widget/lib/styles.css';
 
 
-
-
-// writeFile('responses.txt', " ", (err) => {
-//   if(err) throw err;
-//   console.log('File has been saved');
-// });
-
 export default class FileUpload extends Component {
 
+  // these states are used to store the vars you want to trigger more events or use in different functions
 constructor(props) {
     super(props);
       this.state = {
@@ -29,91 +23,96 @@ constructor(props) {
 
 
 // for file select
-onChangeHandler=event=>{
+onChangeFileSelectHandler=event=>{
     this.setState({
       selectedFile: event.target.files[0],
       loaded: 0,
     })
   }
+
   // for uploading file
-  onClickHandler = () => {
+  onClickUploadFileHandler = () => {
     const data = new FormData()
     data.append('file', this.state.selectedFile)
     var text = 'resume text: '
     console.log(data)
+    // HITTING ENDPOINT /upload ->  since our port is 8000
+    // receive two parameter endpoint url , and form data, which is the resume
     axios.post("http://localhost:8000/upload", data, {
-       // receive two    parameter endpoint url ,form data
+       
     }).then(res => { // then print response status
         text = res.data;
-        //console.log(text);
 
+        // update the entity list to what to send TO betty
         this.setState({
           resumeEntitiesList: text
           }, () => {
-              // this.afterSetStateFinished();
           });
     })
-    // make the interview chat show up
+    // make the interview chat show up, so change this state
     this.setState({
       isActive: true
           }, () => {
               // this.afterSetStateFinished();
           });
-      // send a hello to trigger the welcome node
+
+      // send a hello to trigger the welcome node rom Betty
       this.onSendQueMessage('HELLOO','');
  
     }
 
-    getRespForPrev(message) {
-      
-    }
-
     onClickDelete = () => {
+      // HITTING ENDPOINT -> deleting the resume
+      // don't need to send any data, so just do a get request
       axios.get("http://localhost:8000/delete").then(res => { // then print response status
-      //text = res.data;
-      //console.log(text)
+
       });
-        // for the original hello
+        // clear the chat messages
         deleteMessages(this.state.totalMessages);
 
+        // trigger the delete button back off
+        // set messages to 0, so start from begining
         this.setState({
           openDelete: false,
           totalMessages: 0,
           }, () => {
-              // this.afterSetStateFinished();
+
           });
     };
 
+    // this needed to be abstracted out to send our entities versus the user responses
+    // quededQuestion are the entities (Java,..,Club __, Company)
+    // when resp is "Yes I experienced..."
     onSendQueMessage = (quededQuestion, resp) => {
       console.log(quededQuestion);
       console.log(resp);
+      // signifies end of interview, so last message queued
       if (quededQuestion === 'end'){
         console.log("in end");
+        // addResponseMessage will add it to the chat box from 'Betty' side
         addResponseMessage('Sweet! Alright, I think those are all the questions I have - thanks for you time!');
         addResponseMessage('**end of interview, delete & upload to start another**');
 
+        // add to toal messages sent, and open the delete option
         this.setState({
           openDelete: true,
           totalMessages: this.state.totalMessages + 1
           }, () => {
               // this.afterSetStateFinished();
           });
-        // delete resume stored
-      
-        // this.setState({
-        //   isActive: true
-        //       }, () => {
-        //           // this.afterSetStateFinished();
-        //       }); --> maybe a solution? or record the results of evaluations
+
+      // this signifies the first response, triggers hello, so only send the response, not the queued entity
       } else if (quededQuestion === 'HELLOO' && resp === ''){
-        //deleteMessages(1);
+        // putting data in a format to send to the backend ENDPOINT
         const nextQuestion = `incomingMessage=${quededQuestion}`;
             
+        // HITTING ENDPOINT, sending response from user to be evaluated
         axios.post("http://localhost:8000/bettyresp", nextQuestion, {
         // receive two    parameter endpoint url ,form data
           }).then(res => { // then print response status
           // text = res.data;
           console.log(res);
+          // addResponseMessage will add it to the chat box from 'Betty' side
           addResponseMessage(res.data);
           this.setState({
             totalMessages: this.state.totalMessages + 1
@@ -121,17 +120,16 @@ onChangeHandler=event=>{
                 // this.afterSetStateFinished();
             });
           
-          // this.setState({
-          //       fileDisplay: text
-          //   }, () => {
-          //       // this.afterSetStateFinished();
-          //   });
       })
+      
       }else{
+        // this triggers not begining or end of interview messages
+       // so need to send queued entity and response from user
         console.log("in else");
             //do the evaluation of previous response here
             const prevResp = `incomingMessage=${resp}`;
             
+            // HITTING ENDPOINT, sending response from user to be evaluated
             axios.post("http://localhost:8000/bettyresp", prevResp, {
             // receive two    parameter endpoint url ,form data
               }).then(res => { // then print response status
@@ -147,6 +145,7 @@ onChangeHandler=event=>{
 
               const nextQuestion = `incomingMessage=${quededQuestion}`;
             
+              // HITTING ENDPOINT, sending queued entity in order to trigger Betty's next question
               axios.post("http://localhost:8000/bettyresp", nextQuestion, {
               // receive two    parameter endpoint url ,form data
                 }).then(res => { // then print response status
@@ -159,32 +158,22 @@ onChangeHandler=event=>{
                       // this.afterSetStateFinished();
                   });
                 
-                // this.setState({
-                //       fileDisplay: text
-                //   }, () => {
-                //       // this.afterSetStateFinished();
-                //   });
             })
-              
-              // this.setState({
-              //       fileDisplay: text
-              //   }, () => {
-              //       // this.afterSetStateFinished();
-              //   });
+
           })
-          //do next quesstion here
-         
+  
       }
 
     }
-    // message will be the message that the user ACTUALLY sends, but arent using that right now
-    // required by the Widget component, but want to send out own queued messages
+
+    // required by the Widget component, but want to send out own queued messages, which we do in onSendQueMessage
     handleNewUserMessage = (message) => {
-      //handleNewUserMessage(message);
+      // makes sure there is a entity to ask about, or it is the begining or end of interview
       if(this.state.resumeEntitiesList.length > 0){
         // will send first entity from resume entities found
-        var check = this.state.resumeEntitiesList.shift();
-        this.onSendQueMessage(check, message);
+        var next_entity = this.state.resumeEntitiesList.shift();
+        // params are entity to ask about, and message from the user
+        this.onSendQueMessage(next_entity, message);
       }
       
 
@@ -205,13 +194,13 @@ onChangeHandler=event=>{
           once you successfully upload your resume. Throughout the interview Betty will also give you feedback and suggests about your responses. Good luck! 
         </h4>
         <h4> Please upload a .docx file (word document)</h4>
-        <input type="file" accept=".docx" name="file" className="btn btn-secondary" onChange={this.onChangeHandler}/>
+        <input type="file" accept=".docx" name="file" className="btn btn-secondary" onChange={this.onChangeFileSelectHandler}/>
         <h4>Once your desired Resume is choosen, please click upload</h4>
         <div>
-        <button type="button" className="btn btn-success" onClick={this.onClickHandler}>Upload</button> 
+        <button type="button" className="btn btn-success" onClick={this.onClickUploadFileHandler}>Upload</button> 
         </div>
         <div>
-        {/* <p>{this.state.resumeEntitiesList}</p> */}
+        {/* this will display the first params versus the second depending on the state of isActive */}
         {this.state.isActive ?(
               // <HideButton onClick={this.handleHide}/>
               <div>
@@ -219,7 +208,7 @@ onChangeHandler=event=>{
                 {/* //handleNewUserMessage={handleNewUserMessage(this.state.resumeEntitiesList.shift())} */}
                  <Widget title="Welcome to Git-A-Job's Interview Chat" subtitle="Type below to answer interview questions" handleNewUserMessage={this.handleNewUserMessage}/>
               {/* <h4>Resume Upload Success, click below to chat with a hiring manager</h4>
-              <button type="button" className="btn btn-info" onClick={this.onClickHandlerWidget}>Chat with Betty!</button> */}
+              <button type="button" className="btn btn-info" onClick={this.onClickUploadFileHandlerWidget}>Chat with Betty!</button> */}
               </div>
            ) : (
             //  <ShowButton onClick={this.handleShow}/>
