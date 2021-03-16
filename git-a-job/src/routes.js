@@ -33,13 +33,13 @@ const dashboardRoutes = [
   //   component: Upgrade,
   //   layout: "/admin",
   // },
-  {
-    path: "/home",
-    name: "Home",
-    icon: "nc-icon nc-satisfied",
-    component: Dashboard,
-    layout: "/admin",
-  },
+  // {
+  //   path: "/home",
+  //   name: "Home",
+  //   icon: "nc-icon nc-satisfied",
+  //   component: Dashboard,
+  //   layout: "/admin",
+  // },
   {
     path: "/resume",
     name: "Upload & Interview",

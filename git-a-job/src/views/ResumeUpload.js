@@ -19,7 +19,7 @@ function TableList() {
   return (
     <>
       <Container fluid>
-        <h4> Please upload a .docx file (word document)</h4>
+        
         <FileUpload/>
       {/* <Form>
         <Form.Group>
