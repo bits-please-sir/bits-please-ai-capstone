@@ -197,7 +197,7 @@ onChangeFileSelectHandler=event=>{
         <input type="file" accept=".docx" name="file" className="btn btn-secondary" onChange={this.onChangeFileSelectHandler}/>
         <h4>Once your desired Resume is choosen, please click upload</h4>
         <div>
-        <button type="button" className="btn btn-success" onClick={this.onClickUploadFileHandler}>Upload</button> 
+        <button type="button" className="btn btn-success" onClick={this.onClickUploadFileHandler}>Start</button> 
         </div>
         <div>
         {/* this will display the first params versus the second depending on the state of isActive */}
@@ -207,6 +207,8 @@ onChangeFileSelectHandler=event=>{
                 <h4>Resume Upload Success, click on widget to chat with a hiring manager</h4>
                 {/* //handleNewUserMessage={handleNewUserMessage(this.state.resumeEntitiesList.shift())} */}
                  <Widget title="Welcome to Git-A-Job's Interview Chat" subtitle="Type below to answer interview questions" handleNewUserMessage={this.handleNewUserMessage}/>
+                 <h4>Restart, and click upload again to start another interview</h4>
+                <button type="button" className="btn btn-warning" onClick={this.onClickDelete}>Restart</button> 
               {/* <h4>Resume Upload Success, click below to chat with a hiring manager</h4>
               <button type="button" className="btn btn-info" onClick={this.onClickUploadFileHandlerWidget}>Chat with Betty!</button> */}
               </div>

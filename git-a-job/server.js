@@ -86,10 +86,23 @@ var storage = multer.diskStorage({
 var upload = multer({ storage: storage }).single('file')
 
 // ENDPOINT /delete will delete the resume from the local code base
+function deleteRes(){
+  try {
+    // unlink will remove the file
+    fs.unlinkSync('public/resume.docx');
+    // create new session ID for potential new interview
+    // sessID = create_session_id();
+    // return res.status(200).send('File deleted');
+    //file removed
+  } catch(err) {
+    console.error(err)
+  }
+
+}
 app.get('/delete', function(req, res) {
     try {
         // unlink will remove the file
-        fs.unlinkSync('public/resume.docx');
+        //fs.unlinkSync('public/resume.docx');
         // create new session ID for potential new interview
         sessID = create_session_id();
         return res.status(200).send('File deleted');
@@ -104,6 +117,7 @@ app.get('/delete', function(req, res) {
 app.post('/upload',function(req, res) {
      
     upload(req, res, function (err) {
+     // sessID = create_session_id();
         // multer is the module used for the upload
            if (err instanceof multer.MulterError) {
                return res.status(500).json(err)
@@ -168,10 +182,13 @@ app.post('/upload',function(req, res) {
                       langs_to_ask.push('' + max_company[0].text);
                       langs_to_ask.push('end');
                       console.log(langs_to_ask);
+                      //delete res 
+                      deleteRes();
                       // send the entities to ask about back to the front end
                       return res.status(200).send(langs_to_ask);
 
                   } else{
+                    deleteRes();
                     return res.status(400).send('No data to retrieve');
                   }
 
