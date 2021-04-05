@@ -35,7 +35,6 @@ constructor(props) {
         languages: [],
         watson: null,
         isActive: false,
-        openDelete: false,
         totalMessages: 0,
       }
    
@@ -234,15 +233,7 @@ onChangeFileSelectHandler=event=>{
             <li>A company you have worked at/with</li>
           </ul>  
         <a href="https://drive.google.com/file/d/1Uf8VvvpsMfNYaAiRoQgeCSNX9-JhR1En/view">Resume Format Example</a>
-        <span>
-        <h4> Please upload a .docx file (word document)</h4>
-        <input type="file" accept=".docx" name="file" className="btn btn-secondary" onChange={this.onChangeFileSelectHandler}/>
-        <h4>Once your desired Resume is choosen, please click upload</h4>
-        <div>
-        <button type="button" className="btn btn-success" onClick={this.onClickUploadFileHandler}>Start</button> 
-        <LoadingIndicator/>
-        </div>
-        </span>
+
         <div>
         {/* this will display the first params versus the second depending on the state of isActive */}
         {this.state.isActive ?(
@@ -257,19 +248,17 @@ onChangeFileSelectHandler=event=>{
               <button type="button" className="btn btn-info" onClick={this.onClickUploadFileHandlerWidget}>Chat with Betty!</button> */}
               </div>
            ) : (
-            //  <ShowButton onClick={this.handleShow}/>
-            <p/>
-           )}
-
-        {this.state.openDelete ?(
-              // <HideButton onClick={this.handleHide}/>
-              <div>
-                <h4>Delete Resume, and click upload again to start another interview</h4>
-                <button type="button" className="btn btn-warning" onClick={this.onClickDelete}>Delete Resume</button> 
-              </div>
-           ) : (
-            //  <ShowButton onClick={this.handleShow}/>
-            <p/>
+            <div>
+                <span>
+                <h4> Please upload a .docx file (word document)</h4>
+                <input type="file" accept=".docx" name="file" className="btn btn-secondary" onChange={this.onChangeFileSelectHandler}/>
+                <h4>Once your desired Resume is choosen, please click upload</h4>
+                <div>
+                <button type="button" className="btn btn-success" onClick={this.onClickUploadFileHandler}>Start</button> 
+                <LoadingIndicator/>
+                </div>
+                </span>
+            </div>
            )}
         
         </div>
