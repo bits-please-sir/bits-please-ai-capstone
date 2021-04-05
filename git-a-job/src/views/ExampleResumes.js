@@ -19,35 +19,18 @@ import ChatComposer from "./ChatComposer";
 export default class App extends Component {
   constructor(props) {
       super(props);
-      this.state = {
-      messages:[
-      {text: "Betty: Hey There! My name's Betty and I'll be your interviewer today." },
-      { text: "Betty: Could you expand on your experience with React at IBM?"}
-      ]
   };
-  }
-
-  submitted = getNewMessage => {
-    if (getNewMessage != "") {
-      // match the state format
-      const newMessage = { text: getNewMessage };
-      // merge new message in copy of state stored messages
-      let updatedMessages = [...this.state.messages, newMessage, {text: "Betty: That's great! *remeber to always mention methods + results*"}, {text: "Betty: I see you have a lot of leardship roles, what is one time you had to resolve a conflict in that type of position?"}];
-      // update state
-      this.setState({
-        messages: updatedMessages
-      });
-    }
-  };
+  
   render(){
     return(
       <div>
-        <h1>Betty The Manager</h1>
-        {/* send stored messages as props to chat window */}
-        <ChatWindow messagesList={this.state.messages} />
-        {/* send submitted props to chat composer */}
-        <ChatComposer submitted={this.submitted} />
-        
+         <h1>
+        Example Resumes
+        </h1>
+        <h4>
+        You can even download to try them out!
+        </h4>
+        <iframe src="https://drive.google.com/file/d/1Uf8VvvpsMfNYaAiRoQgeCSNX9-JhR1En/preview" width="320" height="360"></iframe>        
       </div>
     );
   }

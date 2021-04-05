@@ -17,7 +17,7 @@ function Icons() {
   return (
     <>
       <Container fluid>
-        <h1> Suggested Coding Challenges</h1>
+        <h1> Suggested Resources for Prep</h1>
       <Table className="table-hover table-striped">
                   <thead>
                     <tr>

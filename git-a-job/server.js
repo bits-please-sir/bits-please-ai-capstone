@@ -113,6 +113,11 @@ app.get('/delete', function(req, res) {
     }
 );
 
+// for checking white space
+String.prototype.trim = function () {
+  return this.replace(/^\s*/, "").replace(/\s*$/, "");
+}
+
 // ENDPOINT /upload will upload the resume to the local code base 
 app.post('/upload',function(req, res) {
      
@@ -120,29 +125,49 @@ app.post('/upload',function(req, res) {
      // sessID = create_session_id();
         // multer is the module used for the upload
            if (err instanceof multer.MulterError) {
-               return res.status(500).json(err)
+               return res.status(500).json('File upload error: ' + err)
            } else if (err) {
-               return res.status(500).json(err)
+               return res.status(500).json('File upload error: ' + err)
            }
            // since it is uploaded to the same place everytime, just grab it from public/resume.docx
            mammoth.extractRawText({path: "public/resume.docx"}).then(function (resultObject) {
             //console.log(resultObject.value);
             let resume_text = resultObject.value;
+            console.log(resume_text);
+            // resume_text = resume_text+"nothing";
+            if (resume_text.trim().length == 0) {
+              console.log('ZERO TEXT');
+              deleteRes();
+              var non_data = ["NODATACOLLECTEDERROR"];
+              return res.status(200).send(non_data);
+            }
+            
             const delim = [' ','  ', '.', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
             // filter out random delims in resume text
             let filtered_resume_text = resume_text.toLowerCase().replace(/[*_#:@,.()/]/g, ' ');
 
-            // llist of languages recignized
-            let langs_to_ask = filter_langs(filtered_resume_text);
-            console.log(langs_to_ask);
-            // this will randomize the languages to ask about each interview
-            langs_to_ask = langs_to_ask.sort(() => Math.random() - 0.5)
-            console.log(langs_to_ask);
-            langs_to_ask = [langs_to_ask[0],langs_to_ask[1],langs_to_ask[2],langs_to_ask[3]]
-            console.log(langs_to_ask);
+            // list of languages recignized
+            let entities_to_ask_about = filter_langs(filtered_resume_text);
+            //delete res 
+            deleteRes();
+            // if there are languages, pick 4 at random
+            if (entities_to_ask_about.length != 0){
+              //delete res 
+              console.log(entities_to_ask_about);
+              // this will randomize the languages to ask about each interview
+              entities_to_ask_about = entities_to_ask_about.sort(() => Math.random() - 0.5)
+              console.log(entities_to_ask_about);
+              entities_to_ask_about = [entities_to_ask_about[0],entities_to_ask_about[1],entities_to_ask_about[2],entities_to_ask_about[3]]
+              console.log(entities_to_ask_about);
+            } else {
+              //delete res 
+              console.log("no languages");
+            }
+           
             // calling NLU to get entities
             const analyzeParams = {
                 'text': filtered_resume_text,
+                'language': 'en', // english language specifier so we dont have to check 100< characters 
                 'features': {
                   'entities': {
                     'sentiment': true,
@@ -156,9 +181,10 @@ app.post('/upload',function(req, res) {
                   //console.log(JSON.stringify(analysisResults, null, 2));
                   // list of entities recignized
                   var entity_list = JSON.stringify(analysisResults.result.entities, null, 2);
+                  console.log(analysisResults.result.entities);
 
                   // make sure the results of entities recignized are not nothing
-                  if (analysisResults.result.entities != null) {
+                  if (analysisResults.result.entities.length != 0) {
                     // get just the organization entities
                     var orgs_list = analysisResults.result.entities.filter(function (entry) {
                         return entry.type === 'Organization';
@@ -167,34 +193,54 @@ app.post('/upload',function(req, res) {
                     var company_list = analysisResults.result.entities.filter(function (entry) {
                         return entry.type === 'Company';
                     });
+
+                    // get just the sport entities
+                    var sport_list = analysisResults.result.entities.filter(function (entry) {
+                      return entry.type === 'Sport';
+                  });
                    
                       // will get organizations that only contain clubs
-                      var max_org = orgs_list.filter(function (entry) {
+                      var club_orgs = orgs_list.filter(function (entry) {
                         return entry.text.indexOf('club') !== -1;
                     });
-                      console.log(max_org);
-                      // this will choose the most relevant company on the resume
-                      var max_company = company_list.filter( x => x["relevance"] == Math.max(...company_list.map(x => x["relevance"])) )
-                      console.log(max_company);
-    
-                      // adding the orgs and company to the entities to ask the user about
-                      langs_to_ask.push('' + max_org[0].text);
-                      langs_to_ask.push('' + max_company[0].text);
-                      langs_to_ask.push('end');
-                      console.log(langs_to_ask);
-                      //delete res 
-                      deleteRes();
-                      // send the entities to ask about back to the front end
-                      return res.status(200).send(langs_to_ask);
 
-                  } else{
-                    deleteRes();
-                    return res.status(400).send('No data to retrieve');
+                      
+                      
+                      if (club_orgs.length != 0){
+                          // adding the orgs and company to the entities to ask the user about
+                          entities_to_ask_about.push('' + club_orgs[0].text);
+                      }
+
+                      if (sport_list.length != 0){
+                        entities_to_ask_about.push('' + sport_list[0].text);
+                      }
+                    
+                      if (company_list.length != 0){
+                        // this will choose the most relevant company on the resume
+                          var max_company = company_list.filter( x => x["relevance"] == Math.max(...company_list.map(x => x["relevance"])) )
+                          console.log(max_company);
+                          entities_to_ask_about.push('' + max_company[0].text);
+                      }
+                      
+                      entities_to_ask_about.push('end');
+                      console.log(entities_to_ask_about);
+                      
+                      // send the entities to ask about back to the front end
+                      return res.status(200).send(entities_to_ask_about);
+
+                      // aka both have nothing - no languages or entities
+                  } else if(entities_to_ask_about.length == 0){
+                    console.log("no data at all");
+                    return res.status(200).send(['NODATACOLLECTEDERROR']);
+                    // aka still has languages to return
+                  } else {
+                    console.log("just entities no languages");
+                    return res.status(200).send(entities_to_ask_about);
                   }
 
                 })
                 .catch(err => {
-                  console.log('error:', err);
+                  console.log('NLU error:', err);
                 });
 
           })
@@ -227,12 +273,19 @@ app.post('/bettyresp', function (req, res) {
         .then(resp => {
           //console.log(JSON.stringify(res.result, null, 2));
           console.log(JSON.stringify(resp.result));
-          console.log(JSON.stringify(resp.result.output.generic[0].text));
-          // sends response from betty back to the frontend
-          return res.status(200).send(JSON.stringify(resp.result.output.generic[0].text));
+          if( resp.result.output.generic.length == 0 ){
+            console.log("no generic response found");
+            // sends response from betty back to the frontend
+            return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+          } else{
+            console.log(JSON.stringify(resp.result.output.generic[0].text));
+            // sends response from betty back to the frontend
+            return res.status(200).send(JSON.stringify(resp.result.output.generic[0].text));
+          }
+          
         })
         .catch(err => {
-          console.log(err);
+          console.log('Watson Assistant error: ' + err);
         });
 });
 
