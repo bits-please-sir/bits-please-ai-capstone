@@ -12,6 +12,18 @@ dotenv.config();
 
 
 
+// tone analyzer init
+const ToneAnalyzerV3 = require('ibm-watson/tone-analyzer/v3');
+const { IamAuthenticator } = require('ibm-watson/auth');
+
+const toneAnalyzer = new ToneAnalyzerV3({
+  version: '2017-09-21',
+  authenticator: new IamAuthenticator({
+    apikey: `${process.env.TONE_API_KEY}`,
+  }),
+  serviceUrl: `${process.env.TONE_API_URL}`,
+});
+
 
 // amy b's nlu code 
 const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
@@ -60,7 +72,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // non intelligently filtering for languages rn, hard coding to pull out these ones
 function filter_langs(lang_list) {
-    const lang = ['python', 'java', 'ruby', 'golang', 'react', 'sql', 'c','javascript','kotlin'];
+    const lang = ['python', 'Java', 'ruby', 'golang', 'react', 'sql', ' C ','javascript','kotlin', ' C++ '];
     // filter the resume text to just the languages that match those above
     var final_filter = lang.filter(value => lang_list.includes(value));
 
@@ -129,6 +141,7 @@ app.post('/upload',function(req, res) {
            } else if (err) {
                return res.status(500).json('File upload error: ' + err)
            }
+
            // since it is uploaded to the same place everytime, just grab it from public/resume.docx
            mammoth.extractRawText({path: "public/resume.docx"}).then(function (resultObject) {
             //console.log(resultObject.value);
@@ -151,13 +164,19 @@ app.post('/upload',function(req, res) {
             //delete res 
             deleteRes();
             // if there are languages, pick 4 at random
-            if (entities_to_ask_about.length != 0){
+            if (entities_to_ask_about.length > 0){
               //delete res 
               console.log(entities_to_ask_about);
               // this will randomize the languages to ask about each interview
               entities_to_ask_about = entities_to_ask_about.sort(() => Math.random() - 0.5)
               console.log(entities_to_ask_about);
-              entities_to_ask_about = [entities_to_ask_about[0],entities_to_ask_about[1],entities_to_ask_about[2],entities_to_ask_about[3]]
+              // ask about 4 random languages or however many thay have
+              if(entities_to_ask_about.length < 4){
+                // just keep them all shuffled
+                entities_to_ask_about = entities_to_ask_about
+              } else {
+                entities_to_ask_about = [entities_to_ask_about[0],entities_to_ask_about[1],entities_to_ask_about[2],entities_to_ask_about[3]]
+              }
               console.log(entities_to_ask_about);
             } else {
               //delete res 
@@ -272,16 +291,28 @@ app.post('/bettyresp', function (req, res) {
         })
         .then(resp => {
           //console.log(JSON.stringify(res.result, null, 2));
-          console.log(JSON.stringify(resp.result));
+          // console.log(" resp.result " + JSON.stringify(resp.result));
+          // console.log(" resp.result.output " + JSON.stringify(resp.result.output));
+          // console.log(" resp.result.output.generic " + JSON.stringify(resp.result.output.generic));
+          // console.log(" resp.result.output.generic[0] " + JSON.stringify(resp.result.output.generic[0]))
+          // console.log(" resp.result.output.generic[0].text " + JSON.stringify(resp.result.output.generic[0].text))
+          // console.log("resp type: " + JSON.stringify(resp.result.output.generic[0].response_type))
           if( resp.result.output.generic.length == 0 ){
-            console.log("no generic response found");
+            console.log("no generic response TEXT found");
             // sends response from betty back to the frontend
             return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
-          } else{
+          } else if( typeof JSON.stringify(resp.result.output.generic[0].text) === 'undefined') {
+            console.log("no generic response found - found SUGGESTION");
+            // sends response from betty back to the frontend
+            return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+          } else {
+            console.log("in regular eval")
             console.log(JSON.stringify(resp.result.output.generic[0].text));
             // sends response from betty back to the frontend
             return res.status(200).send(JSON.stringify(resp.result.output.generic[0].text));
           }
+            
+          
           
         })
         .catch(err => {

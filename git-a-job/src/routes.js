@@ -34,7 +34,7 @@ const dashboardRoutes = [
   //   layout: "/admin",
   // },
   // {
-  //   path: "/home",
+  //   path: "/",
   //   name: "Home",
   //   icon: "nc-icon nc-satisfied",
   //   component: Dashboard,

@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import axios from 'axios';
+import { Link } from "react-router-dom";
 import { Widget, addResponseMessage, deleteMessages } from 'react-chat-widget';
 import { usePromiseTracker, trackPromise } from "react-promise-tracker";
 import Loader from 'react-loader-spinner';
@@ -36,6 +37,7 @@ constructor(props) {
         watson: null,
         isActive: false,
         totalMessages: 0,
+        startInt: false,
       }
    
   }
@@ -43,10 +45,24 @@ constructor(props) {
 
 // for file select
 onChangeFileSelectHandler=event=>{
+  console.log(event)
+  console.log("selected file: " + event.target.files[0])
     this.setState({
       selectedFile: event.target.files[0],
       loaded: 0,
     })
+    // make sure user doesn't try to upload if no file is selected
+    if (typeof event.target.files[0] !== 'undefined'){
+      console.log("not undefined")
+      this.setState({
+        startInt: true,
+      })
+    } else {
+      console.log("undefined")
+      this.setState({
+        startInt: false,
+      })
+    }
   }
 
   // for uploading file
@@ -92,6 +108,7 @@ onChangeFileSelectHandler=event=>{
 
       });
         // clear the chat messages
+        addResponseMessage('**restarting interview**');
         deleteMessages(this.state.totalMessages);
 
         // trigger the delete button back off
@@ -226,38 +243,62 @@ onChangeFileSelectHandler=event=>{
           asked by our hiring manager Betty. Betty will be there to chat through a widget pop-up in the bottom right corner 
           once you successfully upload your resume. Throughout the interview Betty will also give you feedback and suggests about your responses. Good luck! 
         </p>
-        <p>Betty could ask you about:</p>
-          <ul>
-            <li>Knowledge/experience of programming languages</li>
-            <li>A club or sport you are involved in</li>
-            <li>A company you have worked at/with</li>
-          </ul>  
-        <a href="https://drive.google.com/file/d/1Uf8VvvpsMfNYaAiRoQgeCSNX9-JhR1En/view">Resume Format Example</a>
+          <Link to="/admin/examples">Reference Resume Examples (Available for Download)</Link>
+          <div/>
+          <Link to="/admin/resources">Other Additional Helpful Resources</Link>
+        <div className="row">
+                  <div className="col-4">
+                    <p>Betty could ask you about:</p>
+                      <ul>
+                        <li>Knowledge/experience of programming languages</li>
+                        <li>A club or sport you are involved in</li>
+                        <li>A company you have worked at/with</li>
+                      </ul>
+                      </div>
+                <div className="col-6">
+                  <p>Is Betty asking you inaccurate questions?</p>
+                  <ul>
+                    <li>check out the example resumes for a typical undergrad technology format</li>
+                    <li>Are you maybe highlighting something in your resume too much?</li>
+                    <li>Are you maybe not emphasizing something enough?</li>
+                  </ul>
+                </div>
+          </div>
+        
 
         <div>
         {/* this will display the first params versus the second depending on the state of isActive */}
         {this.state.isActive ?(
               // <HideButton onClick={this.handleHide}/>
               <div>
-                <h4>Resume Upload Success, click on widget to chat with a hiring manager</h4>
+                <p>Resume Upload Success, click on widget to chat with a hiring manager</p>
                 {/* //handleNewUserMessage={handleNewUserMessage(this.state.resumeEntitiesList.shift())} */}
                  <Widget title="Welcome to Git-A-Job's Interview Chat" subtitle="Type below to answer interview questions" handleNewUserMessage={this.handleNewUserMessage}/>
-                 <h4>Restart, and click upload again to start another interview</h4>
+                 <p>click restart to trigger a new  interview</p>
                 <button type="button" className="btn btn-warning" onClick={this.onClickDelete}>Restart</button> 
               {/* <h4>Resume Upload Success, click below to chat with a hiring manager</h4>
               <button type="button" className="btn btn-info" onClick={this.onClickUploadFileHandlerWidget}>Chat with Betty!</button> */}
               </div>
            ) : (
             <div>
-                <span>
-                <h4> Please upload a .docx file (word document)</h4>
-                <input type="file" accept=".docx" name="file" className="btn btn-secondary" onChange={this.onChangeFileSelectHandler}/>
-                <h4>Once your desired Resume is choosen, please click upload</h4>
-                <div>
-                <button type="button" className="btn btn-success" onClick={this.onClickUploadFileHandler}>Start</button> 
-                <LoadingIndicator/>
+                <div className="row">
+                  <div className="col-4">
+                    <p> choose a .docx file </p>
+                    <input type="file" accept=".docx" name="file" className="btn btn-secondary" onChange={this.onChangeFileSelectHandler}/>
+                  </div>
+                  {this.state.startInt ?(
+                    <div className="col-6">
+                    <p>click to start interview</p>
+                    <button type="button" className="btn btn-success" onClick={this.onClickUploadFileHandler}>Start</button> 
+                  </div>
+                  ) : (
+                    <div/>
+                  )}
+                  
                 </div>
-                </span>
+                <LoadingIndicator/>
+                
+                
             </div>
            )}
         

@@ -30,7 +30,10 @@ export default class App extends Component {
         <h4>
         You can even download to try them out!
         </h4>
-        <iframe src="https://drive.google.com/file/d/1Uf8VvvpsMfNYaAiRoQgeCSNX9-JhR1En/preview" width="320" height="360"></iframe>        
+        <iframe src="https://drive.google.com/file/d/1Uf8VvvpsMfNYaAiRoQgeCSNX9-JhR1En/preview" width="320" height="360"></iframe>
+        <iframe src="https://drive.google.com/file/d/1g5vuDF2xzURlbYQJJaLXLh3vfNvYgze5/preview" width="320" height="360"></iframe>   
+        <iframe src="https://drive.google.com/file/d/1aS0XgQa7jGd6JcH-RLSz0w6_h35vOuR-/preview" width="320" height="360"></iframe>    
+        <iframe src="https://drive.google.com/file/d/1kTqbY-5hiBIIkK1C_2B668TxZH7HefGh/preview" width="320" height="360"></iframe>
       </div>
     );
   }
