@@ -27,7 +27,6 @@ const toneAnalyzer = new ToneAnalyzerV3({
 
 // amy b's nlu code 
 const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
-const { IamAuthenticator } = require('ibm-watson/auth');
 
 const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
   version: '2020-08-01',
@@ -267,6 +266,92 @@ app.post('/upload',function(req, res) {
 
 });
 
+// ENDPOINT /toneanalyzer will evaluate tone of user response
+app.post('/toneanalyzer', function (req, res) {
+
+  console.log('Got body:', req.body);
+  console.log(req.body.incomingMessage);
+
+  const toneParams = {
+    toneInput: { 'text': req.body.incomingMessage },
+    contentType: 'application/json',
+  };
+
+  toneAnalyzer.tone(toneParams)
+  .then(toneAnalysis => {
+
+    console.log(JSON.stringify(toneAnalysis.result.document_tone.tones));
+    var max_tone_score = 0
+    var max_tone_name = ""
+    var max_tone_id = ""
+    var list_of_max = [];
+    if(toneAnalysis.result.document_tone.tones.length == 0){
+      list_of_max = ["", ""];
+    }else{
+      var tones_recignized = toneAnalysis.result.document_tone.tones // should be list
+      var i;
+      for (i = 0; i < tones_recignized.length; i++){
+        console.log(tones_recignized[i])
+        if (tones_recignized[i].score > max_tone_score){
+          max_tone_score = tones_recignized[i].score
+          max_tone_id = tones_recignized[i].tone_id
+          max_tone_name = tones_recignized[i].tone_name
+        }
+      
+      }
+      list_of_max = [max_tone_id, max_tone_name];
+
+    }
+
+    
+    console.log("max tone: " + list_of_max);
+
+    var tone_to_return = "*Tone:* " + String.fromCodePoint(`0x1F928`) + " *unknown" + "*";
+    if(list_of_max[0] !== "" && list_of_max[1] !== ""){
+      switch(list_of_max[0]) {
+        case "anger":
+          tone_to_return = "*Tone:* " + String.fromCodePoint(`0x1F621`) + " *" + list_of_max[1] + "*"
+          // code block
+          break;
+        case "fear":
+          tone_to_return = "*Tone:* " + String.fromCodePoint(`0x1F630`) + " *" +  list_of_max[1] + "*"
+          // code block
+          break;
+        case "joy":
+          tone_to_return = "*Tone:* " + String.fromCodePoint(`0x1F917`) + " *" +  list_of_max[1] + "*"
+            // code block
+          break;
+        case "sadness":
+          tone_to_return = "*Tone:* " + String.fromCodePoint(`0x1F614`) + " *" +  list_of_max[1] + "*"
+          // code block
+          break;
+        case "analytical":
+          tone_to_return = "*Tone:* " + String.fromCodePoint(`0x1F913`) + " *" +  list_of_max[1] + "*"
+            // code block
+          break;
+        case "confident":
+          tone_to_return = "*Tone:* " + String.fromCodePoint(`0x1F4AA`) + " *" + list_of_max[1] + "*"
+            // code block
+          break;
+        case "tentative":
+          tone_to_return = "*Tone:* " + String.fromCodePoint(`0x1F615`) + " *" +  tone_list_id_name[1] + "*"
+            // code block
+          break;
+        default:
+          tone_to_return = "*Tone:* " + String.fromCodePoint(`0x1F928`) + " *" + " unknown" + "*"
+          // code block
+      }
+
+    }
+
+    return res.status(200).send(tone_to_return);
+    
+  })
+  .catch(err => {
+    console.log('Tone error:', err);
+  });
+
+});
 
 // ENDPPOINT /bettyresp will send entities or responses from user to the assistant 
 app.post('/bettyresp', function (req, res) {
@@ -277,8 +362,8 @@ app.post('/bettyresp', function (req, res) {
     //     if(err) throw err;
     //     console.log('Data appended to file');
     //   });
-    //console.log(res);
-
+    
+   
 
     // sends message to betty
     assistant.message({
@@ -290,13 +375,8 @@ app.post('/bettyresp', function (req, res) {
           }
         })
         .then(resp => {
-          //console.log(JSON.stringify(res.result, null, 2));
-          // console.log(" resp.result " + JSON.stringify(resp.result));
-          // console.log(" resp.result.output " + JSON.stringify(resp.result.output));
-          // console.log(" resp.result.output.generic " + JSON.stringify(resp.result.output.generic));
-          // console.log(" resp.result.output.generic[0] " + JSON.stringify(resp.result.output.generic[0]))
-          // console.log(" resp.result.output.generic[0].text " + JSON.stringify(resp.result.output.generic[0].text))
-          // console.log("resp type: " + JSON.stringify(resp.result.output.generic[0].response_type))
+
+        
           if( resp.result.output.generic.length == 0 ){
             console.log("no generic response TEXT found");
             // sends response from betty back to the frontend

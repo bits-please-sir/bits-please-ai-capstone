@@ -104,6 +104,10 @@ onChangeFileSelectHandler=event=>{
     onClickDelete = () => {
       // HITTING ENDPOINT -> deleting the resume
       // don't need to send any data, so just do a get request
+      this.setState({
+        startInt: false,
+      })
+      
       axios.get("http://localhost:8000/delete").then(res => { // then print response status
 
       });
@@ -133,7 +137,7 @@ onChangeFileSelectHandler=event=>{
         console.log("in end");
         // addResponseMessage will add it to the chat box from 'Betty' side
         addResponseMessage('Sweet! Alright, I think those are all the questions I have - thanks for you time!');
-        addResponseMessage('**end of interview, delete & upload to start another**');
+        addResponseMessage('**end of interview, click restart to interview again**');
 
         // add to toal messages sent, and open the delete option
         this.setState({
@@ -184,7 +188,7 @@ onChangeFileSelectHandler=event=>{
             // receive two    parameter endpoint url ,form data
               }).then(res => { // then print response status
               // text = res.data;
-              console.log(res);
+              console.log("prev question: " + res);
               addResponseMessage(res.data);
 
               this.setState({
@@ -193,14 +197,27 @@ onChangeFileSelectHandler=event=>{
                     // this.afterSetStateFinished();
                 });
 
-              const nextQuestion = `incomingMessage=${quededQuestion}`;
+              // HITTING ENDPOINT, sending queued entity in order to trigger Betty's next question
+              axios.post("http://localhost:8000/toneanalyzer", prevResp, {
+              // receive two    parameter endpoint url ,form data
+                }).then(res => { // then print response status
+                // text = res.data;
+                console.log("tone analysis: " + res);
+                addResponseMessage(res.data);
+                this.setState({
+                  totalMessages: this.state.totalMessages + 1
+                  }, () => {
+                      // this.afterSetStateFinished();
+                  });
+
+                  const nextQuestion = `incomingMessage=${quededQuestion}`;
             
               // HITTING ENDPOINT, sending queued entity in order to trigger Betty's next question
               axios.post("http://localhost:8000/bettyresp", nextQuestion, {
               // receive two    parameter endpoint url ,form data
                 }).then(res => { // then print response status
                 // text = res.data;
-                console.log(res);
+                console.log("next question: " + res);
                 addResponseMessage(res.data);
                 this.setState({
                   totalMessages: this.state.totalMessages + 1
@@ -209,6 +226,10 @@ onChangeFileSelectHandler=event=>{
                   });
                 
             })
+                
+            })
+
+              
 
           })
   
@@ -234,9 +255,16 @@ onChangeFileSelectHandler=event=>{
   render(){
       return(
         <div>
+          <div className="row">
+          <div className="col-4">
         <h1>
         Hello & Welcome to Git-A-Job!
         </h1>
+        </div>
+        <div className="col-6">
+        <img src="https://www.memesmonkey.com/images/memesmonkey/6f/6fae49ddb76249e9330dad9338eee16b.jpeg" alt="Interview Meme" width="330" height="230"></img>
+        </div>
+        </div>
         <p>
           Git-A-Job is a platform powered by knowledge-based systems to help YOU prep for those upcoming technical interviews. This application is geared towards undergraduate students in computer science or technology related fields and only recignizes English text intelligently at this time.
           The first step is to upload your resume, and from there specific questions about the topics on your resume will be 
