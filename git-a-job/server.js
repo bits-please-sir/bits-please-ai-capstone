@@ -50,6 +50,7 @@ const assistant = new AssistantV2({
 let sessID = create_session_id();
 // a new session should be created for every new interview
 async function create_session_id(){
+  console.log("creating session")
     assistant.createSession({
         assistantId: `${process.env.ASSISTANT_ID}`
       })
@@ -71,7 +72,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // non intelligently filtering for languages rn, hard coding to pull out these ones
 function filter_langs(lang_list) {
-    const lang = ['python', 'Java', 'ruby', 'golang', 'react', 'sql', ' C ','javascript','kotlin', ' C++ '];
+    const lang = [' python ', ' java ', ' ruby ', ' golang ', ' react ', ' sql ', ' c ',' javascript ',' kotlin ', ' c++ ',' perl ',' c# ',' scala ',' swift ',' unity ',' angular '];
     // filter the resume text to just the languages that match those above
     var final_filter = lang.filter(value => lang_list.includes(value));
 
@@ -156,7 +157,7 @@ app.post('/upload',function(req, res) {
             
             const delim = [' ','  ', '.', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
             // filter out random delims in resume text
-            let filtered_resume_text = resume_text.toLowerCase().replace(/[*_#:@,.()/]/g, ' ');
+            let filtered_resume_text = resume_text.toLowerCase().replace(/[*_:@,.()/]/g, ' ');
 
             // list of languages recignized
             let entities_to_ask_about = filter_langs(filtered_resume_text);
@@ -334,7 +335,7 @@ app.post('/toneanalyzer', function (req, res) {
             // code block
           break;
         case "tentative":
-          tone_to_return = "*Tone:* " + String.fromCodePoint(`0x1F615`) + " *" +  tone_list_id_name[1] + "*"
+          tone_to_return = "*Tone:* " + String.fromCodePoint(`0x1F615`) + " *" +  list_of_max[1] + "*"
             // code block
           break;
         default:
@@ -379,12 +380,23 @@ app.post('/bettyresp', function (req, res) {
         
           if( resp.result.output.generic.length == 0 ){
             console.log("no generic response TEXT found");
-            // sends response from betty back to the frontend
-            return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+            if( req.body.messageType == 'Resp'){
+              // sends response from betty back to the frontend
+              return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+            // entity
+            } else {
+              return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
+            }
+            
           } else if( typeof JSON.stringify(resp.result.output.generic[0].text) === 'undefined') {
             console.log("no generic response found - found SUGGESTION");
-            // sends response from betty back to the frontend
-            return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+            if( req.body.messageType == 'Resp'){
+              // sends response from betty back to the frontend
+              return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+            // entity
+            } else {
+              return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
+            }
           } else {
             console.log("in regular eval")
             console.log(JSON.stringify(resp.result.output.generic[0].text));

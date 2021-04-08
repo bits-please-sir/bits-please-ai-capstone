@@ -18,28 +18,26 @@ function Icons() {
     <>
       <Container fluid>
         <h1> Suggested Resources for Prep</h1>
+        <p>Definitely check out the book link below 👇 it is an awesome resource</p>
+        <a href="https://www.amazon.com/Cracking-Coding-Interview-Programming-Questions/dp/0984782850">Cracking the Coding Interview</a>
       <Table className="table-hover table-striped">
                   <thead>
                     <tr>
                       <th className="border-0">Challenge</th>
-                      <th className="border-0">Source of Suggestion</th>
                       <th className="border-0">Link</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>Two Sum</td>
-                      <td>Junior Front-End Developer</td>
                       <td><a href="https://leetcode.com/problems/two-sum/">Link</a></td>
                     </tr>
                     <tr>
                     <td>Reverse Integer</td>
-                      <td>Front End Software Engineer</td>
                       <td><a href="https://leetcode.com/problems/reverse-integer/">Link</a></td>
                     </tr>
                     <tr>
                     <td>Container With Most Water</td>
-                      <td>Front End Developer</td>
                       <td><a href="https://leetcode.com/problems/container-with-most-water/">Link</a></td>
                     </tr>
                   </tbody>

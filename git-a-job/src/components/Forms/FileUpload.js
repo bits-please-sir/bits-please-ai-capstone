@@ -135,9 +135,43 @@ onChangeFileSelectHandler=event=>{
       // signifies end of interview, so last message queued
       if (quededQuestion === 'end'){
         console.log("in end");
-        // addResponseMessage will add it to the chat box from 'Betty' side
-        addResponseMessage('Sweet! Alright, I think those are all the questions I have - thanks for you time!');
-        addResponseMessage('**end of interview, click restart to interview again**');
+        // evaluating one last time
+         //do the evaluation of previous response here
+         const prevResp = `incomingMessage=${resp}&messageType=Resp`;
+            
+         // HITTING ENDPOINT, sending response from user to be evaluated
+         axios.post("http://localhost:8000/toneanalyzer", prevResp, {
+         // receive two    parameter endpoint url ,form data
+           }).then(res => { // then print response status
+           // text = res.data;
+           console.log("prev question: " + res);
+           addResponseMessage(res.data);
+
+           this.setState({
+             totalMessages: this.state.totalMessages + 1
+             }, () => {
+                 // this.afterSetStateFinished();
+             });
+
+           // HITTING ENDPOINT, sending queued entity in order to trigger Betty's next question
+           axios.post("http://localhost:8000/bettyresp", prevResp, {
+           // receive two    parameter endpoint url ,form data
+             }).then(res => { // then print response status
+             // text = res.data;
+             console.log("tone analysis: " + res);
+             addResponseMessage(res.data);
+             this.setState({
+               totalMessages: this.state.totalMessages + 1
+               }, () => {
+                   // this.afterSetStateFinished();
+               });
+               // addResponseMessage will add it to the chat box from 'Betty' side
+              addResponseMessage('Sweet! Alright, I think those are all the questions I have - thanks for you time!');
+              addResponseMessage('**end of interview, click restart to interview again**');
+             });
+            });
+        
+        
 
         // add to toal messages sent, and open the delete option
         this.setState({
@@ -155,9 +189,14 @@ onChangeFileSelectHandler=event=>{
                 console.log("did not ID anything")
                 var stand_str = "standard format?";
                 addResponseMessage("Actually...I wasn't able to see any programming languages, clubs, or companies that stand out...maybe I should change my glasses - could you try uploading a resume similar to the examples provided?");
+                this.setState({
+                  resumeEntitiesList: []
+                  }, () => {
+                      // this.afterSetStateFinished();
+                  });
               } else {
                   // putting data in a format to send to the backend ENDPOINT
-              const nextQuestion = `incomingMessage=${quededQuestion}`;
+              const nextQuestion = `incomingMessage=${quededQuestion}&messageType=Entity`;
                   
               // HITTING ENDPOINT, sending response from user to be evaluated
               axios.post("http://localhost:8000/bettyresp", nextQuestion, {
@@ -181,10 +220,10 @@ onChangeFileSelectHandler=event=>{
        // so need to send queued entity and response from user
         console.log("in else");
             //do the evaluation of previous response here
-            const prevResp = `incomingMessage=${resp}`;
+            const prevResp = `incomingMessage=${resp}&messageType=Resp`;
             
             // HITTING ENDPOINT, sending response from user to be evaluated
-            axios.post("http://localhost:8000/bettyresp", prevResp, {
+            axios.post("http://localhost:8000/toneanalyzer", prevResp, {
             // receive two    parameter endpoint url ,form data
               }).then(res => { // then print response status
               // text = res.data;
@@ -198,7 +237,7 @@ onChangeFileSelectHandler=event=>{
                 });
 
               // HITTING ENDPOINT, sending queued entity in order to trigger Betty's next question
-              axios.post("http://localhost:8000/toneanalyzer", prevResp, {
+              axios.post("http://localhost:8000/bettyresp", prevResp, {
               // receive two    parameter endpoint url ,form data
                 }).then(res => { // then print response status
                 // text = res.data;
@@ -210,7 +249,7 @@ onChangeFileSelectHandler=event=>{
                       // this.afterSetStateFinished();
                   });
 
-                  const nextQuestion = `incomingMessage=${quededQuestion}`;
+                  const nextQuestion = `incomingMessage=${quededQuestion}&messageType=Entity`;
             
               // HITTING ENDPOINT, sending queued entity in order to trigger Betty's next question
               axios.post("http://localhost:8000/bettyresp", nextQuestion, {
@@ -245,6 +284,8 @@ onChangeFileSelectHandler=event=>{
         var next_entity = this.state.resumeEntitiesList.shift();
         // params are entity to ask about, and message from the user
         this.onSendQueMessage(next_entity, message);
+      } else {
+        addResponseMessage('**please click restart interview**');
       }
       
 
@@ -256,15 +297,20 @@ onChangeFileSelectHandler=event=>{
       return(
         <div>
           <div className="row">
-          <div className="col-4">
-        <h1>
-        Hello & Welcome to Git-A-Job!
-        </h1>
+              <div className="col-3">
+                <h1>
+                Hello & Welcome to Git-A-Job!
+                </h1>
+              </div>
+            <div className="col-4">
+              <img src="https://www.memesmonkey.com/images/memesmonkey/6f/6fae49ddb76249e9330dad9338eee16b.jpeg" alt="Interview Meme" width="380" height="280"></img>
+            </div>
+            <div className="col-5">
+              <img src="https://d35w6hwqhdq0in.cloudfront.net/d10c9fac30f0d0fcc0360f5bd60df4e9.png" alt="Interview Meme" width="630" height="280"></img>
+            </div>
         </div>
-        <div className="col-6">
-        <img src="https://www.memesmonkey.com/images/memesmonkey/6f/6fae49ddb76249e9330dad9338eee16b.jpeg" alt="Interview Meme" width="330" height="230"></img>
-        </div>
-        </div>
+        <div/>
+        <p/>
         <p>
           Git-A-Job is a platform powered by knowledge-based systems to help YOU prep for those upcoming technical interviews. This application is geared towards undergraduate students in computer science or technology related fields and only recignizes English text intelligently at this time.
           The first step is to upload your resume, and from there specific questions about the topics on your resume will be 
@@ -275,20 +321,28 @@ onChangeFileSelectHandler=event=>{
           <div/>
           <Link to="/admin/resources">Other Additional Helpful Resources</Link>
         <div className="row">
-                  <div className="col-4">
-                    <p>Betty could ask you about:</p>
+                  <div className="col-3">
+                    <p>Betty could ask you about: 💬</p>
                       <ul>
-                        <li>Knowledge/experience of programming languages</li>
-                        <li>A club or sport you are involved in</li>
-                        <li>A company you have worked at/with</li>
+                        <li>Knowledge/experience of programming languages 🤖</li>
+                        <li>A club or sport you are involved in ⚽️</li>
+                        <li>A company you have worked at/with 🏢</li>
                       </ul>
                       </div>
-                <div className="col-6">
-                  <p>Is Betty asking you inaccurate questions?</p>
+                      <div className="col-4">
+                    <p>Betty evaluates you on: 👹</p>
+                      <ul>
+                        <li>Tone of your response - for this interview, you probably want to focus on 🤓 analytical and 💪 confident tones</li>
+                        <li>Good introduction including your year in school 📓</li>
+                        <li>Mentions of involvements/leadership/coursework 🥇</li>
+                      </ul>
+                      </div>
+                <div className="col-5">
+                  <p>Is Betty asking you inaccurate questions? 😬</p>
                   <ul>
-                    <li>check out the example resumes for a typical undergrad technology format</li>
-                    <li>Are you maybe highlighting something in your resume too much?</li>
-                    <li>Are you maybe not emphasizing something enough?</li>
+                    <li>check out the example resumes for a typical undergrad technology format 📋</li>
+                    <li>Are you maybe highlighting something in your resume too much? 🔝</li>
+                    <li>The resume parsing is also very preliminary at the moment 👶</li>
                   </ul>
                 </div>
           </div>

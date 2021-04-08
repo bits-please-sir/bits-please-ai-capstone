@@ -34,6 +34,8 @@ export default class App extends Component {
         <iframe src="https://drive.google.com/file/d/1g5vuDF2xzURlbYQJJaLXLh3vfNvYgze5/preview" width="320" height="360"></iframe>   
         <iframe src="https://drive.google.com/file/d/1aS0XgQa7jGd6JcH-RLSz0w6_h35vOuR-/preview" width="320" height="360"></iframe>    
         <iframe src="https://drive.google.com/file/d/1kTqbY-5hiBIIkK1C_2B668TxZH7HefGh/preview" width="320" height="360"></iframe>
+        <div/>
+        <a href="https://www.cmu.edu/career/documents/sample-resumes-cover-letters/sample-resumes_scs.pdf">Sources</a>
       </div>
     );
   }
