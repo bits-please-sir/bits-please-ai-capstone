@@ -72,7 +72,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // non intelligently filtering for languages rn, hard coding to pull out these ones
 function filter_langs(lang_list) {
-    const lang = [' python ', ' java ', ' ruby ', ' golang ', ' react ', ' sql ', ' c ',' javascript ',' kotlin ', ' c++ ',' perl ',' c# ',' scala ',' swift ',' unity ',' angular '];
+    const lang = [' python ', ' java ', ' ruby ', ' golang ', ' react ', ' sql ', ' c ',' javascript ',' kotlin ', ' perl ',' c# ',' scala ',' swift ',' unity ',' angular ',' matlab '];
     // filter the resume text to just the languages that match those above
     var final_filter = lang.filter(value => lang_list.includes(value));
 
