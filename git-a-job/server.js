@@ -80,6 +80,16 @@ function filter_langs(lang_list) {
 
 }
 
+// check if they are a B.S. or B.A.
+function check_bachelors_degree(resume_text){
+  const degree = ['b.s.','bachelor of science','b.a.','bachelor of arts']
+
+  var degree_text = degree.filter(value => resume_text.includes(value));
+
+  return degree_text;
+
+}
+
 // this storage is used to store the resum upload in the /public folder
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -146,7 +156,7 @@ app.post('/upload',function(req, res) {
            mammoth.extractRawText({path: "public/resume.docx"}).then(function (resultObject) {
             //console.log(resultObject.value);
             let resume_text = resultObject.value;
-            console.log(resume_text);
+            //console.log(resume_text);
             // resume_text = resume_text+"nothing";
             if (resume_text.trim().length == 0) {
               console.log('ZERO TEXT');
@@ -154,10 +164,18 @@ app.post('/upload',function(req, res) {
               var non_data = ["NODATACOLLECTEDERROR"];
               return res.status(200).send(non_data);
             }
+
             
-            const delim = [' ','  ', '.', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
+            
+            const delim = [' ','  ', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
             // filter out random delims in resume text
-            let filtered_resume_text = resume_text.toLowerCase().replace(/[*_:@,.()/]/g, ' ');
+            let filtered_resume_text = resume_text.toLowerCase().replace(/[*_:@,()/]/g, ' ');
+
+            console.log(filtered_resume_text);
+
+            // filtering for bachelor degree 
+            let user_bachelors = check_bachelors_degree(filtered_resume_text)
+            console.log("scraped bachelor: " + user_bachelors)
 
             // list of languages recignized
             let entities_to_ask_about = filter_langs(filtered_resume_text);

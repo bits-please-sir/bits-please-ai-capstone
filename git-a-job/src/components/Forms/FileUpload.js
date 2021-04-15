@@ -71,6 +71,7 @@ onChangeFileSelectHandler=event=>{
     data.append('file', this.state.selectedFile)
     var text = 'resume text: '
     console.log(data)
+    /// those three laoding dots
     trackPromise(
         // HITTING ENDPOINT /upload ->  since our port is 8000
         // receive two parameter endpoint url , and form data, which is the resume
