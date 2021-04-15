@@ -18,8 +18,8 @@
 import Dashboard from "views/Dashboard.js";
 import UserProfile from "views/UserProfile.js";
 import ResumeUpload from "views/ResumeUpload.js";
-import WatsonInterview from "views/WatsonInterview.js";
-import CodingChallenge from "views/CodingChallenge.js";
+import ExampleResumes from "views/ExampleResumes.js";
+import OtherResources from "views/OtherResources.js";
 import Maps from "views/Maps.js";
 import Notifications from "views/Notifications.js";
 import Upgrade from "views/Upgrade.js";
@@ -34,14 +34,14 @@ const dashboardRoutes = [
   //   layout: "/admin",
   // },
   // {
-  //   path: "/home",
+  //   path: "/",
   //   name: "Home",
   //   icon: "nc-icon nc-satisfied",
   //   component: Dashboard,
   //   layout: "/admin",
   // },
   {
-    path: "/resume",
+    path: "/interview",
     name: "Upload & Interview",
     icon: "nc-icon nc-cloud-upload-94",
     component: ResumeUpload, 
@@ -54,20 +54,20 @@ const dashboardRoutes = [
   //   component: UserProfile,
   //   layout: "/admin",
   // },
-  // {
-  //   path: "/behaviorial",
-  //   name: "Behavioral Prep",
-  //   icon: "nc-icon nc-chat-round",
-  //   component: WatsonInterview,
-  //   layout: "/admin",
-  // },
-  // {
-  //   path: "/coding",
-  //   name: "Coding Challege",
-  //   icon: "nc-icon nc-puzzle-10",
-  //   component: CodingChallenge,
-  //   layout: "/admin",
-  // },
+  {
+    path: "/examples",
+    name: "Example Resumes",
+    icon: "nc-icon nc-paper-2",
+    component: ExampleResumes,
+    layout: "/admin",
+  },
+  {
+    path: "/resources",
+    name: "Other Resources",
+    icon: "nc-icon nc-bulb-63",
+    component: OtherResources,
+    layout: "/admin",
+  },
   // {
   //   path: "/maps",
   //   name: "Maps",
