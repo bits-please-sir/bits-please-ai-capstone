@@ -87,8 +87,7 @@ function filter_GPA(input) {
     var match = input.match(/(^| )[0-4]\.\d{1,3}/);
     return match ? match[0].trim() : null;
 }
-
-
+// filter for graduation year, assuming it's in May 
 function graduation_year(input) {
     //const months = [' january ', ' february ', ' march ', ' april ', ' may ', ' june ', ' july ', ' august ', ' september ', ' october ', ' november ', ' december ', ' jan ', ' feb ', ' mar ', ' apr ', ' jun ', ' jul ', ' aug ', ' sept ', ' oct ', ' nov ', ' dec '];
     var date = input.match(/may 20[1-2][0-9]/)
@@ -179,6 +178,7 @@ app.post('/upload',function(req, res) {
             // filter out random delims in resume text
             let filtered_resume_text = resume_text.toLowerCase().replace(/[*_:@,.()/]/g, ' ');
 
+            // find graduation month and year
             let grad_date = graduation_year(filtered_resume_text)
             console.log(grad_date);
 
