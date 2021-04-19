@@ -80,6 +80,36 @@ function filter_langs(lang_list) {
 
 }
 
+// check volunteer
+function check_volunteering(resume_text){
+  const volunteer = ['volunteer']
+
+  var volunteer_text = volunteer.filter(value => resume_text.includes(value));
+
+  return volunteer_text;
+
+}
+
+// check for Ivies
+function check_Ivies(resume_text){
+  const ivies = ['columbia university', 'brown university', 'university of pennsylvania', 'yale university','harvard university', 'princeton university', 'cornell university', 'dartmouth university']
+  
+  var ivy_text = ivies.filter(value => resume_text.includes(value));
+
+  return ivy_text;
+
+}
+
+// check for community college
+function check_community_college(resume_text){
+  const community_college = ['community college']
+
+  var community_college_text = community_college.filter(value => resume_text.includes(value));
+
+  return community_college_text;
+
+}
+
 // this storage is used to store the resum upload in the /public folder
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -158,6 +188,18 @@ app.post('/upload',function(req, res) {
             const delim = [' ','  ', '.', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
             // filter out random delims in resume text
             let filtered_resume_text = resume_text.toLowerCase().replace(/[*_:@,.()/]/g, ' ');
+
+            // filtering for volunteering 
+            let user_volunteer = check_volunteering(filtered_resume_text)
+            console.log("scraped volunteer: " + user_volunteer)
+
+            // filtering for ivies
+            let user_ivies = check_Ivies(filtered_resume_text)
+            console.log("scraped Ivies: " + user_ivies)
+
+             // filtering for community college
+             let user_community_college = check_community_college(filtered_resume_text)
+             console.log("scraped community college: " + user_community_college)
 
             // list of languages recignized
             let entities_to_ask_about = filter_langs(filtered_resume_text);
