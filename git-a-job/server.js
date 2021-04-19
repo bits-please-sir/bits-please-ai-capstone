@@ -68,6 +68,7 @@ async function create_session_id(){
 
 // used to read the data passed from the front end to the backend
 const bodyParser = require('body-parser');
+const { match } = require('assert');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // non intelligently filtering for languages rn, hard coding to pull out these ones
@@ -79,6 +80,21 @@ function filter_langs(lang_list) {
     return final_filter;
 
 }
+
+// filter for GPA 
+function filter_GPA(input) {
+    //match input to this regex expression 
+    var match = input.match(/(^| )[0-4]\.\d{1,3}/);
+    return match ? match[0].trim() : null;
+}
+
+
+function graduation_year(input) {
+    //const months = [' january ', ' february ', ' march ', ' april ', ' may ', ' june ', ' july ', ' august ', ' september ', ' october ', ' november ', ' december ', ' jan ', ' feb ', ' mar ', ' apr ', ' jun ', ' jul ', ' aug ', ' sept ', ' oct ', ' nov ', ' dec '];
+    var date = input.match(/may 20[1-2][0-9]/)
+    if (date) var ret = date[0].substring(0,1).toUpperCase() + date[0].substring(1);
+    return date ? ret : null;
+  }
 
 // this storage is used to store the resum upload in the /public folder
 var storage = multer.diskStorage({
@@ -155,9 +171,16 @@ app.post('/upload',function(req, res) {
               return res.status(200).send(non_data);
             }
             
+            // find gpa
+            let gpa = filter_GPA(resume_text);
+            console.log(gpa);
+            
             const delim = [' ','  ', '.', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
             // filter out random delims in resume text
             let filtered_resume_text = resume_text.toLowerCase().replace(/[*_:@,.()/]/g, ' ');
+
+            let grad_date = graduation_year(filtered_resume_text)
+            console.log(grad_date);
 
             // list of languages recignized
             let entities_to_ask_about = filter_langs(filtered_resume_text);
