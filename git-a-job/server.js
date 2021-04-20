@@ -105,8 +105,8 @@ function filter_GPA(input) {
 // filter for graduation year, assuming it's in May 
 function graduation_year(input) {
     //const months = [' january ', ' february ', ' march ', ' april ', ' may ', ' june ', ' july ', ' august ', ' september ', ' october ', ' november ', ' december ', ' jan ', ' feb ', ' mar ', ' apr ', ' jun ', ' jul ', ' aug ', ' sept ', ' oct ', ' nov ', ' dec '];
-    var date = input.match(/may 20[1-2][0-9]/)
-    if (date) var ret = date[0].substring(0,1).toUpperCase() + date[0].substring(1);
+    var date = input.match(/ 20[1-2][0-9]/)
+    if (date) var ret = date[0].substring(1);
     return date ? ret : null;
   }
 
@@ -238,6 +238,10 @@ app.post('/upload',function(req, res) {
 
             if(user_bachelors.length != 0){
               entities_to_ask_about.push(user_bachelors)
+            }
+
+            if(grad_date.length != 0){
+              entities_to_ask_about.push(grad_date)
             }
            
             // calling NLU to get entities
