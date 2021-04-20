@@ -88,7 +88,11 @@ function check_bachelors_degree(resume_text){
 
   var degree_text = degree.filter(value => resume_text.includes(value));
 
-  return degree_text;
+  if (degree_text.length != 0){
+    return degree_text[0];
+  } else {
+    return '';
+  }
 
 }
 
@@ -187,7 +191,7 @@ app.post('/upload',function(req, res) {
 
             // find gpa
             let gpa = filter_GPA(resume_text);
-            console.log(gpa);
+            console.log("gpa: " + gpa);
             
             // filter out random delims in resume text
             let filtered_resume_text = resume_text.toLowerCase().replace(/[*_:@,()/]/g, ' ');
@@ -200,10 +204,12 @@ app.post('/upload',function(req, res) {
 
             // find graduation month and year
             let grad_date = graduation_year(filtered_resume_text)
-            console.log(grad_date);
+            console.log("grad year: " + grad_date);
 
             // list of languages recignized
             let entities_to_ask_about = filter_langs(filtered_resume_text);
+
+            
             //delete res 
             deleteRes();
             // if there are languages, pick 4 at random
@@ -224,6 +230,14 @@ app.post('/upload',function(req, res) {
             } else {
               //delete res 
               console.log("no languages");
+            }
+
+            if(gpa.length != 0){
+              entities_to_ask_about.push(gpa)
+            }
+
+            if(user_bachelors.length != 0){
+              entities_to_ask_about.push(user_bachelors)
             }
            
             // calling NLU to get entities
