@@ -5,6 +5,7 @@ import { Widget, addResponseMessage, deleteMessages } from 'react-chat-widget';
 import { usePromiseTracker, trackPromise } from "react-promise-tracker";
 import Loader from 'react-loader-spinner';
 import 'react-chat-widget/lib/styles.css';
+import Speech from 'react-speech';
 import {
   ButtonGroup,
   ToggleButton,
@@ -18,6 +19,20 @@ import {
   Form,
 } from "react-bootstrap";
 
+const speechStyle = {
+  play: {
+    button: {
+      width: '28',
+      height: '28',
+      cursor: 'pointer',
+      pointerEvents: 'none',
+      outline: 'none',
+      backgroundColor: 'yellow',
+      border: 'solid 1px rgba(255,255,255,1)',
+      borderRadius: 6
+    },
+  }
+};
 
 const LoadingIndicator = props => {
   const { promiseInProgress } = usePromiseTracker();
@@ -347,6 +362,7 @@ onChangeFileSelectHandler=event=>{
                 <h1>
                 Hello & Welcome to Git-A-Job!
                 </h1>
+                
               </div>
               <div className="col-4">
               <img src="https://d35w6hwqhdq0in.cloudfront.net/d10c9fac30f0d0fcc0360f5bd60df4e9.png" alt="Interview Meme" width="340" height="160"></img>
@@ -432,6 +448,17 @@ onChangeFileSelectHandler=event=>{
                     </ToggleButton>
                   ))}
                 </ButtonGroup> */}
+                <Speech textAsButton={true}  text="My name's Betty" pitch="0.3"
+                              rate="0.4"
+                              volume="1"
+                              lang="en-GB"
+                              voice="Google UK English Female"/>
+                <Speech textAsButton={true}  text="My name's Karen" pitch="1"
+                              rate="1"
+                              volume="1"
+                              lang="en-GB"
+                              voice="Google UK English Female"/>
+                              <p/>
                 <ToggleButtonGroup type="radio" name="options" defaultValue={1} value={this.state.radioValue} onChange={this.handleWatsonToggleChange}>
                     <ToggleButton variant="info" value={1}>Betty</ToggleButton>
                     <ToggleButton variant="info" value={2}>Karen</ToggleButton>
