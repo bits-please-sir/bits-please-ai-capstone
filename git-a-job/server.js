@@ -235,6 +235,12 @@ String.prototype.trim = function () {
 
 // ENDPOINT /upload will upload the resume to the local code base 
 app.post('/upload',function(req, res) {
+  // console.log("req body: " + req.get(assistantNum))
+  console.log("idk: "+ JSON.stringify(req.headers.assistantnum))
+  console.log(typeof(JSON.stringify(req.headers.assistantnum)))
+
+  var ass_num = JSON.stringify(req.headers.assistantnum);
+  console.log("num: " + ass_num)
      
     upload(req, res, function (err) {
      // sessID = create_session_id();
@@ -315,26 +321,36 @@ app.post('/upload',function(req, res) {
               //delete res 
               console.log("no languages");
             }
+            console.log("assss: " + ass_num)
 
-            if(gpa.length != 0){
-              entities_to_ask_about.push(gpa)
+            if(ass_num == "\"2\""){
+              if(gpa.length != 0){
+                entities_to_ask_about.push(gpa)
+              }
+
             }
-
+            
+            if(ass_num === "\"2\""){
             if(user_bachelors.length != 0){
               entities_to_ask_about.push(user_bachelors)
             }
+          }
 
+          if(ass_num == "\"2\""){
             if(grad_date.length != 0){
               entities_to_ask_about.push(grad_date)
             }
-
+          }
+          if(ass_num == "\"2\""){
             if(user_ivies.length != 0 ){
               entities_to_ask_about.push(user_ivies);
             }
-
+          }
+          if(ass_num == "\"2\""){
             if(user_community_college.length !=0){
               entities_to_ask_about.push(user_community_college);
             }
+          }
            
             // calling NLU to get entities
             const analyzeParams = {

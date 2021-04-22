@@ -115,12 +115,19 @@ onChangeFileSelectHandler=event=>{
     var assistant_state = this.state.radioValue;
     var text = 'resume text: '
     console.log(data)
+    //var params = `assistantNum=${this.state.radioValue}`;
+    var params = {
+      data: data,
+      assistantNum: this.state.radioValue,
+    }
     /// those three laoding dots
     trackPromise(
         // HITTING ENDPOINT /upload ->  since our port is 8000
         // receive two parameter endpoint url , and form data, which is the resume
         axios.post("http://localhost:8000/upload", data, {
-          
+          headers: {
+            assistantNum: this.state.radioValue,
+          }
         }).then(res => { // then print response status
             text = res.data;
             console.log(text);
@@ -213,12 +220,23 @@ onChangeFileSelectHandler=event=>{
                    // this.afterSetStateFinished();
                });
                // addResponseMessage will add it to the chat box from 'Betty' side
-              addResponseMessage('Welp..Alright, I think those are all the questions I have - what a big waste of my time');
-              this.setState({
-                currentSpeechMessage: 'Welp..Alright, I think those are all the questions I have - what a big waste of my time'
-                }, () => {
-                    // this.afterSetStateFinished();
-                });
+               if( this.state.radioValue == 2){
+                addResponseMessage('Welp..Alright, I think those are all the questions I have - what a big waste of my time');
+                this.setState({
+                  currentSpeechMessage: 'Welp..Alright, I think those are all the questions I have - what a big waste of my time'
+                  }, () => {
+                      // this.afterSetStateFinished();
+                  });
+
+               }else{
+                addResponseMessage('Sweet! Alright, I think those are all the questions I have - thank you for your time!');
+                this.setState({
+                  currentSpeechMessage: 'Sweet! Alright, I think those are all the questions I have - thank you for your time!'
+                  }, () => {
+                      // this.afterSetStateFinished();
+                  });
+               }
+              
               addResponseMessage('**end of interview, click restart to interview again**');
              });
             });
@@ -387,16 +405,17 @@ onChangeFileSelectHandler=event=>{
         Git-A-Job is a platform powered by knowledge-based systems to help YOU prep for those upcoming technical interviews. 
         This application is geared towards undergraduate students in computer science or technology-related fields and only 
         recognizes English text intelligently at this time. The first step is to upload your resume, and from there specific 
-        questions about the topics on your resume will be asked by our hiring manager Betty 👵. Betty will be there to chat through 
-        a widget pop-up in the bottom right corner once you successfully upload your resume. Throughout the interview, Betty will 
-        also give you feedback and suggestions about your responses. Good luck! 
+        questions about the topics on your resume will be asked by our hiring manager Betty 👵 or Karen 👹. Betty is our HR department veteran 
+        who is retiring soon. Karen is our mid-level HR specialist who is a little high strung. One of these ladies will be there to chat through 
+        a widget pop-up in the bottom right corner once you successfully upload your resume. Throughout the interview, Betty & Karen will 
+        also give you feedback and suggestions about your responses. You can also click on the text on the side to hear Betty or Karen speak their question. Good luck! 
         </p>
           <Link to="/admin/examples">Reference Resume Examples (Available for Download)</Link>
           <div/>
           <Link to="/admin/resources">Other Additional Helpful Resources</Link>
         <div className="row">
                   <div className="col-3">
-                    <p>Betty could ask you about: 💬</p>
+                    <p>Betty/Karen could ask you about:</p>
                       <ul>
                         <li>Knowledge/experience of programming languages 🤖</li>
                         <li>A club or sport you are involved in ⚽️</li>
@@ -404,7 +423,7 @@ onChangeFileSelectHandler=event=>{
                       </ul>
                       </div>
                       <div className="col-4">
-                    <p>Betty evaluates you on: 👹</p>
+                    <p>Betty/Karenevaluates you on:</p>
                       <ul>
                         <li>Tone of your response - for this interview, you probably want to focus on 🤓 analytical and 💪 confident tones</li>
                         <li>Good introduction including your year in school 📓</li>
@@ -412,7 +431,7 @@ onChangeFileSelectHandler=event=>{
                       </ul>
                       </div>
                 <div className="col-5">
-                  <p>Is Betty asking you inaccurate questions? 😬</p>
+                  <p>Is Betty/Karen asking you inaccurate questions?</p>
                   <ul>
                     <li>check out the example resumes for a typical undergrad technology format 📋</li>
                     <li>Are you maybe highlighting something in your resume too much? 🔝</li>
@@ -435,6 +454,7 @@ onChangeFileSelectHandler=event=>{
                 <button type="button" className="btn btn-warning" onClick={this.onClickDelete}>Restart</button> 
               {/* <h4>Resume Upload Success, click below to chat with a hiring manager</h4>
               <button type="button" className="btn btn-info" onClick={this.onClickUploadFileHandlerWidget}>Chat with Betty!</button> */}
+              <p/>
               {this.state.radioValue === 1 ?(
                 <div>
                   <p>Click to hear Betty's Question:</p>
