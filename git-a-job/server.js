@@ -109,6 +109,7 @@ function filter_langs(lang_list) {
 }
 
 
+
 // check if they are a B.S. or B.A.
 function check_bachelors_degree(resume_text){
   const degree = ['b.s.','bachelor of science','b.a.','bachelor of arts']
@@ -137,6 +138,36 @@ function graduation_year(input) {
     return date ? ret : null;
   }
 
+
+// check volunteer
+function check_volunteering(resume_text){
+  const volunteer = ['volunteer']
+
+  var volunteer_text = volunteer.filter(value => resume_text.includes(value));
+
+  return volunteer_text;
+
+}
+
+// check for Ivies
+function check_Ivies(resume_text){
+  const ivies = ['columbia university', 'brown university', 'university of pennsylvania', 'yale university','harvard university', 'princeton university', 'cornell university', 'dartmouth university']
+  
+  var ivy_text = ivies.filter(value => resume_text.includes(value));
+
+  return ivy_text;
+
+}
+
+// check for community college
+function check_community_college(resume_text){
+  const community_college = ['community college']
+
+  var community_college_text = community_college.filter(value => resume_text.includes(value));
+
+  return community_college_text;
+
+}
 
 // this storage is used to store the resum upload in the /public folder
 var storage = multer.diskStorage({
@@ -234,6 +265,18 @@ app.post('/upload',function(req, res) {
             // find graduation month and year
             let grad_date = graduation_year(filtered_resume_text)
             console.log("grad year: " + grad_date);
+
+            // filtering for volunteering 
+            let user_volunteer = check_volunteering(filtered_resume_text)
+            console.log("scraped volunteer: " + user_volunteer)
+
+            // filtering for ivies
+            let user_ivies = check_Ivies(filtered_resume_text)
+            console.log("scraped Ivies: " + user_ivies)
+
+             // filtering for community college
+             let user_community_college = check_community_college(filtered_resume_text)
+             console.log("scraped community college: " + user_community_college)
 
             // list of languages recignized
             let entities_to_ask_about = filter_langs(filtered_resume_text);
