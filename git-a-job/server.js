@@ -39,26 +39,53 @@ const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
 // amy h + milly assistant code
 const AssistantV2 = require('ibm-watson/assistant/v2');
 
-const assistant = new AssistantV2({
+const bettyAssistant = new AssistantV2({
   version: '2020-04-01',
   authenticator: new IamAuthenticator({
-    apikey: `${process.env.ASSISTANT_API_KEY}`,
+    apikey: `${process.env.BETTY_API_KEY}`,
   }),
-  serviceUrl: `${process.env.ASSISTANT_API_URL}`,
+  serviceUrl: `${process.env.BETTY_URL}`,
 });
 
-let sessID = create_session_id();
+const karenAssistant = new AssistantV2({
+  version: '2020-04-01',
+  authenticator: new IamAuthenticator({
+    apikey: `${process.env.KAREN_API_KEY}`,
+  }),
+  serviceUrl: `${process.env.KAREN_URL}`,
+});
+
+let bettySessID = create_betty_session_id();
+let karenSessID = create_karen_session_id();
 // a new session should be created for every new interview
-async function create_session_id(){
+async function create_betty_session_id(){
   console.log("creating session")
-    assistant.createSession({
-        assistantId: `${process.env.ASSISTANT_ID}`
+    bettyAssistant.createSession({
+        assistantId: `${process.env.BETTY_ID}`
       })
         .then(res => {
             //console.log(res.result);
-            sessID = res.result.session_id;
+            bettySessID = res.result.session_id;
             console.log(JSON.stringify(res.result, null, 2));
-            return sessID;
+            return bettySessID;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+
+};
+
+// a new session should be created for every new interview
+async function create_karen_session_id(){
+  console.log("creating session")
+    karenAssistant.createSession({
+        assistantId: `${process.env.KAREN_ID}`
+      })
+        .then(res => {
+            //console.log(res.result);
+            karenSessID = res.result.session_id;
+            console.log(JSON.stringify(res.result, null, 2));
+            return karenSessID;
         })
         .catch(err => {
           console.log(err);
@@ -147,7 +174,9 @@ app.get('/delete', function(req, res) {
         // unlink will remove the file
         //fs.unlinkSync('public/resume.docx');
         // create new session ID for potential new interview
-        sessID = create_session_id();
+        // should really pass body and check which one to do
+        bettySessID = create_betty_session_id();
+        karenSessID = create_karen_session_id();
         return res.status(200).send('File deleted');
         //file removed
       } catch(err) {
@@ -220,11 +249,11 @@ app.post('/upload',function(req, res) {
               entities_to_ask_about = entities_to_ask_about.sort(() => Math.random() - 0.5)
               console.log(entities_to_ask_about);
               // ask about 4 random languages or however many thay have
-              if(entities_to_ask_about.length < 4){
+              if(entities_to_ask_about.length < 3){
                 // just keep them all shuffled
                 entities_to_ask_about = entities_to_ask_about
               } else {
-                entities_to_ask_about = [entities_to_ask_about[0],entities_to_ask_about[1],entities_to_ask_about[2],entities_to_ask_about[3]]
+                entities_to_ask_about = [entities_to_ask_about[0],entities_to_ask_about[1],entities_to_ask_about[2]]
               }
               console.log(entities_to_ask_about);
             } else {
@@ -420,57 +449,111 @@ app.post('/bettyresp', function (req, res) {
     // logs the data sent from the front end
     console.log('Got body:', req.body);
     console.log(req.body.incomingMessage);
+    console.log("assistant number: "+ req.body.assistantNum)
     // fs.appendFile('responses.txt', req.body.incomingMessage + '\n', (err) => {
     //     if(err) throw err;
     //     console.log('Data appended to file');
     //   });
     
-   
+    // 1 => Betty
+    if (req.body.assistantNum == 1){
+      // sends message to betty
+    bettyAssistant.message({
+      assistantId: `${process.env.BETTY_ID}`,
+      sessionId: bettySessID,
+      input: {
+        'message_type': 'text',
+        'text': req.body.incomingMessage
+        }
+      })
+      .then(resp => {
 
-    // sends message to betty
-    assistant.message({
-        assistantId: `${process.env.ASSISTANT_ID}`,
-        sessionId: sessID,
-        input: {
-          'message_type': 'text',
-          'text': req.body.incomingMessage
-          }
-        })
-        .then(resp => {
-
-        
-          if( resp.result.output.generic.length == 0 ){
-            console.log("no generic response TEXT found");
-            if( req.body.messageType == 'Resp'){
-              // sends response from betty back to the frontend
-              return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
-            // entity
-            } else {
-              return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
-            }
-            
-          } else if( typeof JSON.stringify(resp.result.output.generic[0].text) === 'undefined') {
-            console.log("no generic response found - found SUGGESTION");
-            if( req.body.messageType == 'Resp'){
-              // sends response from betty back to the frontend
-              return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
-            // entity
-            } else {
-              return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
-            }
-          } else {
-            console.log("in regular eval")
-            console.log(JSON.stringify(resp.result.output.generic[0].text));
+      
+        if( resp.result.output.generic.length == 0 ){
+          console.log("no generic response TEXT found");
+          if( req.body.messageType == 'Resp'){
             // sends response from betty back to the frontend
-            return res.status(200).send(JSON.stringify(resp.result.output.generic[0].text));
+            return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+          // entity
+          } else {
+            return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
           }
-            
           
+        } else if( typeof JSON.stringify(resp.result.output.generic[0].text) === 'undefined') {
+          console.log("no generic response found - found SUGGESTION");
+          if( req.body.messageType == 'Resp'){
+            // sends response from betty back to the frontend
+            return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+          // entity
+          } else {
+            return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
+          }
+        } else {
+          console.log("in regular eval")
+          console.log(JSON.stringify(resp.result.output.generic[0].text));
+          // sends response from betty back to the frontend
+          return res.status(200).send(JSON.stringify(resp.result.output.generic[0].text));
+        }
           
-        })
-        .catch(err => {
-          console.log('Watson Assistant error: ' + err);
-        });
+        
+        
+      })
+      .catch(err => {
+        console.log('Watson Assistant error: ' + err);
+      });
+
+      // Karen => 2
+    } else if( req.body.assistantNum == 2) {
+
+         // sends message to betty
+      karenAssistant.message({
+      assistantId: `${process.env.KAREN_ID}`,
+      sessionId: karenSessID,
+      input: {
+        'message_type': 'text',
+        'text': req.body.incomingMessage
+        }
+      })
+      .then(resp => {
+
+      
+        if( resp.result.output.generic.length == 0 ){
+          console.log("no generic response TEXT found");
+          if( req.body.messageType == 'Resp'){
+            // sends response from betty back to the frontend
+            return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+          // entity
+          } else {
+            return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
+          }
+          
+        } else if( typeof JSON.stringify(resp.result.output.generic[0].text) === 'undefined') {
+          console.log("no generic response found - found SUGGESTION");
+          if( req.body.messageType == 'Resp'){
+            // sends response from betty back to the frontend
+            return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+          // entity
+          } else {
+            return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
+          }
+        } else {
+          console.log("in regular eval")
+          console.log(JSON.stringify(resp.result.output.generic[0].text));
+          // sends response from betty back to the frontend
+          return res.status(200).send(JSON.stringify(resp.result.output.generic[0].text));
+        }
+          
+        
+        
+      })
+      .catch(err => {
+        console.log('Watson Assistant error: ' + err);
+      });
+
+    } else {
+      console.log("Assistant number ERROR from front end")
+    }
+    
 });
 
 // starts app listening on the port of the frontend

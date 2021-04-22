@@ -5,6 +5,18 @@ import { Widget, addResponseMessage, deleteMessages } from 'react-chat-widget';
 import { usePromiseTracker, trackPromise } from "react-promise-tracker";
 import Loader from 'react-loader-spinner';
 import 'react-chat-widget/lib/styles.css';
+import {
+  ButtonGroup,
+  ToggleButton,
+  ToggleButtonGroup,
+  Navbar,
+  Nav,
+  Table,
+  Container,
+  Row,
+  Col,
+  Form,
+} from "react-bootstrap";
 
 
 const LoadingIndicator = props => {
@@ -25,7 +37,16 @@ const LoadingIndicator = props => {
 );  
 }
 
+const radios = [
+  { name: 'Betty', value: '1' },
+  { name: 'Karen', value: '2' },
+];
+
+// const [radioValue, setRadioValue] = useState('1');
+
 export default class FileUpload extends Component {
+
+  
 
   // these states are used to store the vars you want to trigger more events or use in different functions
 constructor(props) {
@@ -38,7 +59,10 @@ constructor(props) {
         isActive: false,
         totalMessages: 0,
         startInt: false,
+        radioValue: 1,
       }
+
+    this.handleWatsonToggleChange = this.handleWatsonToggleChange.bind(this);
    
   }
 
@@ -49,6 +73,7 @@ onChangeFileSelectHandler=event=>{
   console.log("selected file: " + event.target.files[0])
     this.setState({
       selectedFile: event.target.files[0],
+      radioValue: this.state.radioValue,
       loaded: 0,
     })
     // make sure user doesn't try to upload if no file is selected
@@ -69,6 +94,9 @@ onChangeFileSelectHandler=event=>{
   onClickUploadFileHandler = () => {
     const data = new FormData()
     data.append('file', this.state.selectedFile)
+    console.log("Selected file in upload: " + this.state.selectedFile)
+    console.log("Chosen assistant in upload: " + this.state.radioValue)
+    var assistant_state = this.state.radioValue;
     var text = 'resume text: '
     console.log(data)
     /// those three laoding dots
@@ -88,7 +116,7 @@ onChangeFileSelectHandler=event=>{
               }, () => {
               });
               // send a hello to trigger the welcome node rom Betty
-             this.onSendQueMessage('HELLOOTHISISTHETRIGGERMESSAGE','');
+             this.onSendQueMessage('HELLOOTHISISTHETRIGGERMESSAGE','',assistant_state);
               
         }));
     // make the interview chat show up, so change this state
@@ -130,15 +158,16 @@ onChangeFileSelectHandler=event=>{
     // this needed to be abstracted out to send our entities versus the user responses
     // quededQuestion are the entities (Java,..,Club __, Company)
     // when resp is "Yes I experienced..."
-    onSendQueMessage = (quededQuestion, resp) => {
+    onSendQueMessage = (quededQuestion, resp, assistant_num) => {
       console.log('queded q: ' + quededQuestion);
       console.log('resp: ' + resp);
+      console.log("Assistant chosen: " + assistant_num)
       // signifies end of interview, so last message queued
       if (quededQuestion === 'end'){
         console.log("in end");
         // evaluating one last time
          //do the evaluation of previous response here
-         const prevResp = `incomingMessage=${resp}&messageType=Resp`;
+         const prevResp = `incomingMessage=${resp}&messageType=Resp&assistantNum=${assistant_num}`;
             
          // HITTING ENDPOINT, sending response from user to be evaluated
          axios.post("http://localhost:8000/toneanalyzer", prevResp, {
@@ -167,7 +196,7 @@ onChangeFileSelectHandler=event=>{
                    // this.afterSetStateFinished();
                });
                // addResponseMessage will add it to the chat box from 'Betty' side
-              addResponseMessage('Sweet! Alright, I think those are all the questions I have - thanks for you time!');
+              addResponseMessage('Welp..Alright, I think those are all the questions I have - what a big waste of my time');
               addResponseMessage('**end of interview, click restart to interview again**');
              });
             });
@@ -197,7 +226,7 @@ onChangeFileSelectHandler=event=>{
                   });
               } else {
                   // putting data in a format to send to the backend ENDPOINT
-              const nextQuestion = `incomingMessage=${quededQuestion}&messageType=Entity`;
+              const nextQuestion = `incomingMessage=${quededQuestion}&messageType=Entity&assistantNum=${assistant_num}`;
                   
               // HITTING ENDPOINT, sending response from user to be evaluated
               axios.post("http://localhost:8000/bettyresp", nextQuestion, {
@@ -221,7 +250,7 @@ onChangeFileSelectHandler=event=>{
        // so need to send queued entity and response from user
         console.log("in else");
             //do the evaluation of previous response here
-            const prevResp = `incomingMessage=${resp}&messageType=Resp`;
+            const prevResp = `incomingMessage=${resp}&messageType=Resp&assistantNum=${assistant_num}`;
             
             // HITTING ENDPOINT, sending response from user to be evaluated
             axios.post("http://localhost:8000/toneanalyzer", prevResp, {
@@ -250,7 +279,7 @@ onChangeFileSelectHandler=event=>{
                       // this.afterSetStateFinished();
                   });
 
-                  const nextQuestion = `incomingMessage=${quededQuestion}&messageType=Entity`;
+                  const nextQuestion = `incomingMessage=${quededQuestion}&messageType=Entity&assistantNum=${assistant_num}`;
             
               // HITTING ENDPOINT, sending queued entity in order to trigger Betty's next question
               axios.post("http://localhost:8000/bettyresp", nextQuestion, {
@@ -283,12 +312,28 @@ onChangeFileSelectHandler=event=>{
       if(this.state.resumeEntitiesList.length > 0){
         // will send first entity from resume entities found
         var next_entity = this.state.resumeEntitiesList.shift();
+        // will get the assistant num
+        var assistant_num = this.state.radioValue;
+        console.log("ass num: " + assistant_num);
         // params are entity to ask about, and message from the user
-        this.onSendQueMessage(next_entity, message);
+        this.onSendQueMessage(next_entity, message, assistant_num);
       } else {
         addResponseMessage('**please click restart interview**');
       }
       
+
+    }
+
+  
+
+    handleWatsonToggleChange=val=> {
+      console.log("event: " + val)
+      this.setState({
+        radioValue: val
+        }, () => {
+            // this.afterSetStateFinished();
+        });
+        ///console.log("watson toggle value: "+ this.radioValue)
 
     }
 
@@ -368,6 +413,33 @@ onChangeFileSelectHandler=event=>{
               </div>
            ) : (
             <div>
+                {/* <ButtonGroup toggle>
+                  {radios.map((radio, idx) => (
+                    <ToggleButton
+                      key={idx}
+                      type="radio"
+                      variant="secondary"
+                      name="radio"
+                      value={radio.value}
+                      checked={this.radioValue === radio.value}
+                      onChange={(e) => this.setState({
+                        radioValue: e.currentTarget.value
+                        }, () => {
+                            // this.afterSetStateFinished();
+                        })}
+                    >
+                      {radio.name}
+                    </ToggleButton>
+                  ))}
+                </ButtonGroup> */}
+                <ToggleButtonGroup type="radio" name="options" defaultValue={1} value={this.state.radioValue} onChange={this.handleWatsonToggleChange}>
+                    <ToggleButton variant="info" value={1}>Betty</ToggleButton>
+                    <ToggleButton variant="info" value={2}>Karen</ToggleButton>
+                  </ToggleButtonGroup>
+                    <div>
+                      Selected option is : {this.state.radioValue}
+                    </div>
+                  <p/>
                 <div className="row">
                   <div className="col-4">
                     <p> choose a .docx file </p>
