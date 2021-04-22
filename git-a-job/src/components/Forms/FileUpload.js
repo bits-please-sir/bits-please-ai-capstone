@@ -75,6 +75,7 @@ constructor(props) {
         totalMessages: 0,
         startInt: false,
         radioValue: 1,
+        currentSpeechMessage: '',
       }
 
     this.handleWatsonToggleChange = this.handleWatsonToggleChange.bind(this);
@@ -207,11 +208,17 @@ onChangeFileSelectHandler=event=>{
              addResponseMessage(res.data);
              this.setState({
                totalMessages: this.state.totalMessages + 1
+               
                }, () => {
                    // this.afterSetStateFinished();
                });
                // addResponseMessage will add it to the chat box from 'Betty' side
               addResponseMessage('Welp..Alright, I think those are all the questions I have - what a big waste of my time');
+              this.setState({
+                currentSpeechMessage: 'Welp..Alright, I think those are all the questions I have - what a big waste of my time'
+                }, () => {
+                    // this.afterSetStateFinished();
+                });
               addResponseMessage('**end of interview, click restart to interview again**');
              });
             });
@@ -252,7 +259,8 @@ onChangeFileSelectHandler=event=>{
                 // addResponseMessage will add it to the chat box from 'Betty' side
                 addResponseMessage(res.data);
                 this.setState({
-                  totalMessages: this.state.totalMessages + 1
+                  totalMessages: this.state.totalMessages + 1,
+                  currentSpeechMessage: res.data
                   }, () => {
                       // this.afterSetStateFinished();
                   });
@@ -289,7 +297,7 @@ onChangeFileSelectHandler=event=>{
                 console.log("tone analysis: " + res);
                 addResponseMessage(res.data);
                 this.setState({
-                  totalMessages: this.state.totalMessages + 1
+                  totalMessages: this.state.totalMessages + 1,
                   }, () => {
                       // this.afterSetStateFinished();
                   });
@@ -304,7 +312,8 @@ onChangeFileSelectHandler=event=>{
                 console.log("next question: " + res);
                 addResponseMessage(res.data);
                 this.setState({
-                  totalMessages: this.state.totalMessages + 1
+                  totalMessages: this.state.totalMessages + 1,
+                  currentSpeechMessage: res.data
                   }, () => {
                       // this.afterSetStateFinished();
                   });
@@ -426,6 +435,29 @@ onChangeFileSelectHandler=event=>{
                 <button type="button" className="btn btn-warning" onClick={this.onClickDelete}>Restart</button> 
               {/* <h4>Resume Upload Success, click below to chat with a hiring manager</h4>
               <button type="button" className="btn btn-info" onClick={this.onClickUploadFileHandlerWidget}>Chat with Betty!</button> */}
+              {this.state.radioValue === 1 ?(
+                <div>
+                  <p>Click to hear Betty's Question:</p>
+                  <Speech textAsButton={true}  text={this.state.currentSpeechMessage} pitch="0.3"
+                              rate="0.7"
+                              volume="1"
+                              lang="en-GB"
+                              voice="Google UK English Female"/>
+                              </div>
+                              ) : (
+                                <div>
+                                  <p>Click to hear Karen's Question:</p>
+                                    <Speech textAsButton={true} text={this.state.currentSpeechMessage} pitch="1"
+                                  rate="1"
+                                  volume="1"
+                                  lang="en-GB"
+                                  voice="Google UK English Female"/>
+                                  
+                                <p/>
+                                </div>
+                              )}
+                         
+                
               </div>
            ) : (
             <div>
@@ -449,7 +481,7 @@ onChangeFileSelectHandler=event=>{
                   ))}
                 </ButtonGroup> */}
                 <Speech textAsButton={true}  text="My name's Betty" pitch="0.3"
-                              rate="0.4"
+                              rate="0.7"
                               volume="1"
                               lang="en-GB"
                               voice="Google UK English Female"/>
@@ -463,9 +495,6 @@ onChangeFileSelectHandler=event=>{
                     <ToggleButton variant="info" value={1}>Betty</ToggleButton>
                     <ToggleButton variant="info" value={2}>Karen</ToggleButton>
                   </ToggleButtonGroup>
-                    <div>
-                      Selected option is : {this.state.radioValue}
-                    </div>
                   <p/>
                 <div className="row">
                   <div className="col-4">

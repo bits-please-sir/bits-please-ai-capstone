@@ -128,14 +128,14 @@ function check_bachelors_degree(resume_text){
 function filter_GPA(input) {
     //match input to this regex expression 
     var match = input.match(/(^| )[0-4]\.\d{1,3}/);
-    return match ? match[0].trim() : null;
+    return match ? match[0].trim() : '';
 }
 // filter for graduation year, assuming it's in May 
 function graduation_year(input) {
     //const months = [' january ', ' february ', ' march ', ' april ', ' may ', ' june ', ' july ', ' august ', ' september ', ' october ', ' november ', ' december ', ' jan ', ' feb ', ' mar ', ' apr ', ' jun ', ' jul ', ' aug ', ' sept ', ' oct ', ' nov ', ' dec '];
     var date = input.match(/ 20[1-2][0-9]/)
     if (date) var ret = date[0].substring(1);
-    return date ? ret : null;
+    return date ? ret : '';
   }
 
 
@@ -145,7 +145,11 @@ function check_volunteering(resume_text){
 
   var volunteer_text = volunteer.filter(value => resume_text.includes(value));
 
-  return volunteer_text;
+  if (volunteer_text.length != 0){
+    return volunteer_text[0];
+  } else {
+    return '';
+  }
 
 }
 
@@ -155,7 +159,11 @@ function check_Ivies(resume_text){
   
   var ivy_text = ivies.filter(value => resume_text.includes(value));
 
-  return ivy_text;
+  if (ivy_text.length != 0){
+    return ivy_text[0];
+  } else {
+    return '';
+  }
 
 }
 
@@ -165,7 +173,11 @@ function check_community_college(resume_text){
 
   var community_college_text = community_college.filter(value => resume_text.includes(value));
 
-  return community_college_text;
+  if (community_college_text.length != 0){
+    return community_college_text[0];
+  } else {
+    return '';
+  }
 
 }
 
@@ -314,6 +326,14 @@ app.post('/upload',function(req, res) {
 
             if(grad_date.length != 0){
               entities_to_ask_about.push(grad_date)
+            }
+
+            if(user_ivies.length != 0 ){
+              entities_to_ask_about.push(user_ivies);
+            }
+
+            if(user_community_college.length !=0){
+              entities_to_ask_about.push(user_community_college);
             }
            
             // calling NLU to get entities
