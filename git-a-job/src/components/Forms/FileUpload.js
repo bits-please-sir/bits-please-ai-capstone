@@ -387,26 +387,25 @@ onChangeFileSelectHandler=event=>{
           <div className="row">
               <div className="col-3">
                 <h1>
-                Hello & Welcome to Git-A-Job!
+                Choose your fighter interviewer #GitFucked
                 </h1>
                 
               </div>
               <div className="col-4">
-              <img src="https://d35w6hwqhdq0in.cloudfront.net/d10c9fac30f0d0fcc0360f5bd60df4e9.png" alt="Interview Meme" width="340" height="160"></img>
+              <img src="https://img.memecdn.com/choose-your-fighter_o_7231641.jpg" alt="Interview Meme" width="380" height="230"></img>
             </div>
             <div className="col-5">
-              <img src="https://www.memesmonkey.com/images/memesmonkey/6f/6fae49ddb76249e9330dad9338eee16b.jpeg" alt="Interview Meme" width="220" height="160"></img>
+              <img src="http://www.shutupandtakemymoney.com/wp-content/uploads/2020/05/choose-your-fighter-susan-karen-brenda-meme-300x250.jpg" alt="Interview Meme" width="280" height="230"></img>
             </div>
-            
         </div>
         <div/>
         <p/>
         <p>
-        Git-A-Job is a platform powered by knowledge-based systems to help YOU prep for those upcoming technical interviews. 
+        Choose your fighter interviewer is a platform powered by knowledge-based systems to help you prep for those upcoming technical interviews with a twist. 
         This application is geared towards undergraduate students in computer science or technology-related fields and only 
         recognizes English text intelligently at this time. The first step is to upload your resume, and from there specific 
         questions about the topics on your resume will be asked by our hiring manager Betty 👵 or Karen 👹. Betty is our HR department veteran 
-        who is retiring soon. Karen is our mid-level HR specialist who is a little high strung. One of these ladies will be there to chat through 
+        who is retiring soon (Easy). Karen is our mid-level HR specialist who is a little high strung (Hard). One of these ladies will be there to chat through 
         a widget pop-up in the bottom right corner once you successfully upload your resume. Throughout the interview, Betty & Karen will 
         also give you feedback and suggestions about your responses. You can also click on the text on the side to hear Betty or Karen speak their question. Good luck! 
         </p>
@@ -423,7 +422,7 @@ onChangeFileSelectHandler=event=>{
                       </ul>
                       </div>
                       <div className="col-4">
-                    <p>Betty/Karenevaluates you on:</p>
+                    <p>Betty/Karen evaluates you on:</p>
                       <ul>
                         <li>Tone of your response - for this interview, you probably want to focus on 🤓 analytical and 💪 confident tones</li>
                         <li>Good introduction including your year in school 📓</li>
@@ -438,7 +437,7 @@ onChangeFileSelectHandler=event=>{
                     <li>The resume parsing is also very preliminary at the moment 👶</li>
                   </ul>
                 </div>
-                <p>** 🙏 Betty respectfully requests you respond to questions in a single text bubble because she is an old lady and can only read one at a time 👵**</p>
+                <p>** 🙏 Betty/Karen respectfully requests you respond to questions in a single text bubble because she is an old lady and can only read one at a time 👵**</p>
           </div>
         
 
