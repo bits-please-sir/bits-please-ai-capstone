@@ -39,26 +39,53 @@ const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
 // amy h + milly assistant code
 const AssistantV2 = require('ibm-watson/assistant/v2');
 
-const assistant = new AssistantV2({
+const bettyAssistant = new AssistantV2({
   version: '2020-04-01',
   authenticator: new IamAuthenticator({
-    apikey: `${process.env.ASSISTANT_API_KEY}`,
+    apikey: `${process.env.BETTY_API_KEY}`,
   }),
-  serviceUrl: `${process.env.ASSISTANT_API_URL}`,
+  serviceUrl: `${process.env.BETTY_URL}`,
 });
 
-let sessID = create_session_id();
+const karenAssistant = new AssistantV2({
+  version: '2020-04-01',
+  authenticator: new IamAuthenticator({
+    apikey: `${process.env.KAREN_API_KEY}`,
+  }),
+  serviceUrl: `${process.env.KAREN_URL}`,
+});
+
+let bettySessID = create_betty_session_id();
+let karenSessID = create_karen_session_id();
 // a new session should be created for every new interview
-async function create_session_id(){
+async function create_betty_session_id(){
   console.log("creating session")
-    assistant.createSession({
-        assistantId: `${process.env.ASSISTANT_ID}`
+    bettyAssistant.createSession({
+        assistantId: `${process.env.BETTY_ID}`
       })
         .then(res => {
             //console.log(res.result);
-            sessID = res.result.session_id;
+            bettySessID = res.result.session_id;
             console.log(JSON.stringify(res.result, null, 2));
-            return sessID;
+            return bettySessID;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+
+};
+
+// a new session should be created for every new interview
+async function create_karen_session_id(){
+  console.log("creating session")
+    karenAssistant.createSession({
+        assistantId: `${process.env.KAREN_ID}`
+      })
+        .then(res => {
+            //console.log(res.result);
+            karenSessID = res.result.session_id;
+            console.log(JSON.stringify(res.result, null, 2));
+            return karenSessID;
         })
         .catch(err => {
           console.log(err);
@@ -68,6 +95,7 @@ async function create_session_id(){
 
 // used to read the data passed from the front end to the backend
 const bodyParser = require('body-parser');
+const { match } = require('assert');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // non intelligently filtering for languages rn, hard coding to pull out these ones
@@ -77,6 +105,79 @@ function filter_langs(lang_list) {
     var final_filter = lang.filter(value => lang_list.includes(value));
 
     return final_filter;
+
+}
+
+
+
+// check if they are a B.S. or B.A.
+function check_bachelors_degree(resume_text){
+  const degree = ['b.s.','bachelor of science','b.a.','bachelor of arts']
+
+  var degree_text = degree.filter(value => resume_text.includes(value));
+
+  if (degree_text.length != 0){
+    return degree_text[0];
+  } else {
+    return '';
+  }
+
+}
+
+// filter for GPA 
+function filter_GPA(input) {
+    //match input to this regex expression 
+    var match = input.match(/(^| )[0-4]\.\d{1,3}/);
+    return match ? match[0].trim() : '';
+}
+// filter for graduation year, assuming it's in May 
+function graduation_year(input) {
+    //const months = [' january ', ' february ', ' march ', ' april ', ' may ', ' june ', ' july ', ' august ', ' september ', ' october ', ' november ', ' december ', ' jan ', ' feb ', ' mar ', ' apr ', ' jun ', ' jul ', ' aug ', ' sept ', ' oct ', ' nov ', ' dec '];
+    var date = input.match(/ 20[1-2][0-9]/)
+    if (date) var ret = date[0].substring(1);
+    return date ? ret : '';
+  }
+
+
+// check volunteer
+function check_volunteering(resume_text){
+  const volunteer = ['volunteer']
+
+  var volunteer_text = volunteer.filter(value => resume_text.includes(value));
+
+  if (volunteer_text.length != 0){
+    return volunteer_text[0];
+  } else {
+    return '';
+  }
+
+}
+
+// check for Ivies
+function check_Ivies(resume_text){
+  const ivies = ['columbia university', 'brown university', 'university of pennsylvania', 'yale university','harvard university', 'princeton university', 'cornell university', 'dartmouth university']
+  
+  var ivy_text = ivies.filter(value => resume_text.includes(value));
+
+  if (ivy_text.length != 0){
+    return ivy_text[0];
+  } else {
+    return '';
+  }
+
+}
+
+// check for community college
+function check_community_college(resume_text){
+  const community_college = ['community college']
+
+  var community_college_text = community_college.filter(value => resume_text.includes(value));
+
+  if (community_college_text.length != 0){
+    return community_college_text[0];
+  } else {
+    return '';
+  }
 
 }
 
@@ -116,7 +217,9 @@ app.get('/delete', function(req, res) {
         // unlink will remove the file
         //fs.unlinkSync('public/resume.docx');
         // create new session ID for potential new interview
-        sessID = create_session_id();
+        // should really pass body and check which one to do
+        bettySessID = create_betty_session_id();
+        karenSessID = create_karen_session_id();
         return res.status(200).send('File deleted');
         //file removed
       } catch(err) {
@@ -132,6 +235,12 @@ String.prototype.trim = function () {
 
 // ENDPOINT /upload will upload the resume to the local code base 
 app.post('/upload',function(req, res) {
+  // console.log("req body: " + req.get(assistantNum))
+  console.log("idk: "+ JSON.stringify(req.headers.assistantnum))
+  console.log(typeof(JSON.stringify(req.headers.assistantnum)))
+
+  var ass_num = JSON.stringify(req.headers.assistantnum);
+  console.log("num: " + ass_num)
      
     upload(req, res, function (err) {
      // sessID = create_session_id();
@@ -146,7 +255,7 @@ app.post('/upload',function(req, res) {
            mammoth.extractRawText({path: "public/resume.docx"}).then(function (resultObject) {
             //console.log(resultObject.value);
             let resume_text = resultObject.value;
-            console.log(resume_text);
+            //console.log(resume_text);
             // resume_text = resume_text+"nothing";
             if (resume_text.trim().length == 0) {
               console.log('ZERO TEXT');
@@ -154,13 +263,43 @@ app.post('/upload',function(req, res) {
               var non_data = ["NODATACOLLECTEDERROR"];
               return res.status(200).send(non_data);
             }
+
             
-            const delim = [' ','  ', '.', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
+            const delim = [' ','  ', ',', ':', ';', '(', ')', '%', '@', '|', '/'];
+
+            // find gpa
+            let gpa = filter_GPA(resume_text);
+            console.log("gpa: " + gpa);
+            
             // filter out random delims in resume text
-            let filtered_resume_text = resume_text.toLowerCase().replace(/[*_:@,.()/]/g, ' ');
+            let filtered_resume_text = resume_text.toLowerCase().replace(/[*_:@,()/]/g, ' ');
+
+            console.log(filtered_resume_text);
+
+            // filtering for bachelor degree 
+            let user_bachelors = check_bachelors_degree(filtered_resume_text)
+            console.log("scraped bachelor: " + user_bachelors)
+
+            // find graduation month and year
+            let grad_date = graduation_year(filtered_resume_text)
+            console.log("grad year: " + grad_date);
+
+            // filtering for volunteering 
+            let user_volunteer = check_volunteering(filtered_resume_text)
+            console.log("scraped volunteer: " + user_volunteer)
+
+            // filtering for ivies
+            let user_ivies = check_Ivies(filtered_resume_text)
+            console.log("scraped Ivies: " + user_ivies)
+
+             // filtering for community college
+             let user_community_college = check_community_college(filtered_resume_text)
+             console.log("scraped community college: " + user_community_college)
 
             // list of languages recignized
             let entities_to_ask_about = filter_langs(filtered_resume_text);
+
+            
             //delete res 
             deleteRes();
             // if there are languages, pick 4 at random
@@ -171,17 +310,47 @@ app.post('/upload',function(req, res) {
               entities_to_ask_about = entities_to_ask_about.sort(() => Math.random() - 0.5)
               console.log(entities_to_ask_about);
               // ask about 4 random languages or however many thay have
-              if(entities_to_ask_about.length < 4){
+              if(entities_to_ask_about.length < 3){
                 // just keep them all shuffled
                 entities_to_ask_about = entities_to_ask_about
               } else {
-                entities_to_ask_about = [entities_to_ask_about[0],entities_to_ask_about[1],entities_to_ask_about[2],entities_to_ask_about[3]]
+                entities_to_ask_about = [entities_to_ask_about[0],entities_to_ask_about[1],entities_to_ask_about[2]]
               }
               console.log(entities_to_ask_about);
             } else {
               //delete res 
               console.log("no languages");
             }
+            console.log("assss: " + ass_num)
+
+            if(ass_num == "\"2\""){
+              if(gpa.length != 0){
+                entities_to_ask_about.push(gpa)
+              }
+
+            }
+            
+            if(ass_num === "\"2\""){
+            if(user_bachelors.length != 0){
+              entities_to_ask_about.push(user_bachelors)
+            }
+          }
+
+          if(ass_num == "\"2\""){
+            if(grad_date.length != 0){
+              entities_to_ask_about.push(grad_date)
+            }
+          }
+          if(ass_num == "\"2\""){
+            if(user_ivies.length != 0 ){
+              entities_to_ask_about.push(user_ivies);
+            }
+          }
+          if(ass_num == "\"2\""){
+            if(user_community_college.length !=0){
+              entities_to_ask_about.push(user_community_college);
+            }
+          }
            
             // calling NLU to get entities
             const analyzeParams = {
@@ -359,57 +528,111 @@ app.post('/bettyresp', function (req, res) {
     // logs the data sent from the front end
     console.log('Got body:', req.body);
     console.log(req.body.incomingMessage);
+    console.log("assistant number: "+ req.body.assistantNum)
     // fs.appendFile('responses.txt', req.body.incomingMessage + '\n', (err) => {
     //     if(err) throw err;
     //     console.log('Data appended to file');
     //   });
     
-   
+    // 1 => Betty
+    if (req.body.assistantNum == 1){
+      // sends message to betty
+    bettyAssistant.message({
+      assistantId: `${process.env.BETTY_ID}`,
+      sessionId: bettySessID,
+      input: {
+        'message_type': 'text',
+        'text': req.body.incomingMessage
+        }
+      })
+      .then(resp => {
 
-    // sends message to betty
-    assistant.message({
-        assistantId: `${process.env.ASSISTANT_ID}`,
-        sessionId: sessID,
-        input: {
-          'message_type': 'text',
-          'text': req.body.incomingMessage
-          }
-        })
-        .then(resp => {
-
-        
-          if( resp.result.output.generic.length == 0 ){
-            console.log("no generic response TEXT found");
-            if( req.body.messageType == 'Resp'){
-              // sends response from betty back to the frontend
-              return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
-            // entity
-            } else {
-              return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
-            }
-            
-          } else if( typeof JSON.stringify(resp.result.output.generic[0].text) === 'undefined') {
-            console.log("no generic response found - found SUGGESTION");
-            if( req.body.messageType == 'Resp'){
-              // sends response from betty back to the frontend
-              return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
-            // entity
-            } else {
-              return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
-            }
-          } else {
-            console.log("in regular eval")
-            console.log(JSON.stringify(resp.result.output.generic[0].text));
+      
+        if( resp.result.output.generic.length == 0 ){
+          console.log("no generic response TEXT found");
+          if( req.body.messageType == 'Resp'){
             // sends response from betty back to the frontend
-            return res.status(200).send(JSON.stringify(resp.result.output.generic[0].text));
+            return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+          // entity
+          } else {
+            return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
           }
-            
           
+        } else if( typeof JSON.stringify(resp.result.output.generic[0].text) === 'undefined') {
+          console.log("no generic response found - found SUGGESTION");
+          if( req.body.messageType == 'Resp'){
+            // sends response from betty back to the frontend
+            return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+          // entity
+          } else {
+            return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
+          }
+        } else {
+          console.log("in regular eval")
+          console.log(JSON.stringify(resp.result.output.generic[0].text));
+          // sends response from betty back to the frontend
+          return res.status(200).send(JSON.stringify(resp.result.output.generic[0].text));
+        }
           
-        })
-        .catch(err => {
-          console.log('Watson Assistant error: ' + err);
-        });
+        
+        
+      })
+      .catch(err => {
+        console.log('Watson Assistant error: ' + err);
+      });
+
+      // Karen => 2
+    } else if( req.body.assistantNum == 2) {
+
+         // sends message to betty
+      karenAssistant.message({
+      assistantId: `${process.env.KAREN_ID}`,
+      sessionId: karenSessID,
+      input: {
+        'message_type': 'text',
+        'text': req.body.incomingMessage
+        }
+      })
+      .then(resp => {
+
+      
+        if( resp.result.output.generic.length == 0 ){
+          console.log("no generic response TEXT found");
+          if( req.body.messageType == 'Resp'){
+            // sends response from betty back to the frontend
+            return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+          // entity
+          } else {
+            return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
+          }
+          
+        } else if( typeof JSON.stringify(resp.result.output.generic[0].text) === 'undefined') {
+          console.log("no generic response found - found SUGGESTION");
+          if( req.body.messageType == 'Resp'){
+            // sends response from betty back to the frontend
+            return res.status(200).send("*I'm not sure what you said there... I'll just move on anyways*");
+          // entity
+          } else {
+            return res.status(200).send("Could you tell me more about this " + req.body.incomingMessage + " part on your resume?");
+          }
+        } else {
+          console.log("in regular eval")
+          console.log(JSON.stringify(resp.result.output.generic[0].text));
+          // sends response from betty back to the frontend
+          return res.status(200).send(JSON.stringify(resp.result.output.generic[0].text));
+        }
+          
+        
+        
+      })
+      .catch(err => {
+        console.log('Watson Assistant error: ' + err);
+      });
+
+    } else {
+      console.log("Assistant number ERROR from front end")
+    }
+    
 });
 
 // starts app listening on the port of the frontend
